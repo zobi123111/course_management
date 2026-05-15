@@ -10,6 +10,7 @@ use App\Models\Rating;
 use App\Models\UserRating;
 use App\Models\UserDocument;
 use App\Models\OuRating;
+use App\Models\TrainingEvents;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
@@ -2174,6 +2175,13 @@ class UserController extends Controller
     {
         $currentUser = auth()->user();
         $user = User::find(decode_id($request->id));
+        $userId = decode_id($request->id);
+        $check_user = TrainingEvents::where('student_id', $userId)->exists();
+
+        if ($check_user) {
+                return redirect()->route('user.index')
+                    ->with('error', 'User cannot be deleted because training records exist.');
+            }
 
         if ($user) {
             UserActivityLog::create([
