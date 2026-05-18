@@ -472,10 +472,12 @@ class TrainingEventsController extends Controller
 
             $latestTraining = $user->TeachTrack()
                 ->orderByDesc('created_at')
+                ->whereNull('deleted_at')
                 ->first();
 
             $hasInitial = $user->TeachTrack()
                 ->whereRaw('LOWER(TRIM(training_type)) = ?', ['initial'])
+                ->whereNull('deleted_at')
                 ->exists();
 
             $validityMonths = 12;
