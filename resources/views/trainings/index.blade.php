@@ -88,7 +88,12 @@
                 <td>{{ $lesson?->instructor?->fname }} {{ $lesson?->instructor?->lname }}</td>
                 <!-- <td>{{ $lesson?->resource?->name }}</td> -->
                 <td>{{ $event?->event_date ? date('d-m-y', strtotime($event->event_date)) : '' }}</td>
-                <td>{{ $event?->course_end_date ? date('d-m-y', strtotime($event->course_end_date)) : '' }}</td>
+                @if($event->is_locked)
+                    <td>{{ $event?->course_end_date ? date('d-m-y', strtotime($event->course_end_date)) : '' }}</td>
+                @else
+                    <td> </td>
+                @endif
+
                 <!-- <td>{{ $lesson?->start_time ? date('h:i A', strtotime($lesson->start_time)) : '' }}</td>
                 <td>{{ $lesson?->end_time ? date('h:i A', strtotime($lesson->end_time)) : '' }}</td> -->
               <td>
@@ -96,7 +101,6 @@
                         <span class="text-primary">Complete</span>
                     @elseif(!empty($event->is_locked))
                         <span class="text-info">Ended</span>
-                      
                     @else
                         <span class="text-danger">Incomplete</span>
                     @endif
@@ -234,7 +238,13 @@
                 <td>{{ $lesson?->instructor?->fname }} {{ $lesson?->instructor?->lname }}</td>
                 <!-- <td>{{ $lesson?->resource?->name }}</td> -->
                 <td>{{ $event?->event_date ? date('d-m-y', strtotime($event->event_date)) : '' }}</td>
-                <td>{{ $event?->course_end_date ? date('d-m-y', strtotime($event->course_end_date)) : '' }}</td>
+                @if($event->is_locked)
+                    <td>{{ $event?->course_end_date ? date('d-m-y', strtotime($event->course_end_date)) : '' }}</td>
+                @else
+                    <td> </td>
+                @endif
+
+                <!-- <td>{{ $event?->course_end_date ? date('d-m-y', strtotime($event->course_end_date)) : '' }}</td> -->
                 <!-- <td>{{ $lesson?->start_time ? date('h:i A', strtotime($lesson->start_time)) : '' }}</td>
                 <td>{{ $lesson?->end_time ? date('h:i A', strtotime($lesson->end_time)) : '' }}</td> -->
                 <td>
