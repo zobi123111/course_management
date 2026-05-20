@@ -5350,6 +5350,7 @@ class TrainingEventsController extends Controller
             ]);
         }
         
+        
         // if ($event->entry_source == 'instructor' && $event->course->teach_track == 1) {
 
         //     $teach_track_validation_date = now()->addMonths($event->course->validity ?? 0);
