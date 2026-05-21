@@ -6340,8 +6340,8 @@ class TrainingEventsController extends Controller
         $request->validate([
             'id' => 'required',
             'training_event_id' => 'required',
-            'custom_time_id.*' => 'required',
-            'custom_time_credited.*' => 'required'
+           // 'custom_time_id.*' => 'required',
+           //    'custom_time_credited.*' => 'required'
         ]);
 
         $event_lesson_id = $request->id;
@@ -6350,22 +6350,29 @@ class TrainingEventsController extends Controller
         $course_id = CourseLesson::where('id', $lesson_id)->value('course_id');
         $student_id = TrainingEvents::where('id', $event_id)->value('student_id');
 
-        // echo "<pre>";
-        //     print_r("event_lesson_id" . $event_lesson_id);
-        // echo "<br>";
-        //     print_r("event_id" . $event_id);
-        // echo "<br>";
-        //     print_r("lesson_id" . $lesson_id);
-        // echo "<br>";
-        //     print_r("course_id" . $course_id);
-        // echo "<br>";
-        //     print_r("student_id" . $student_id);
-        // echo "</pre>";
+    
       
-
+       if (!empty($request->custom_time_id)){
         foreach ($request->custom_time_id as $index => $customTimeId) {
 
+            $hours = $request->custom_time_credited[$index] ?? null;
+
+            if (empty($hours)) {
+                continue;
+            }
+
+
             $customTimeName = LessonCustomTime::where('id', $customTimeId)->value('name');
+            $array = array(
+                 'event_id'       => $event_id,
+                'user_id'        => $student_id,
+                'lesson_id'      => $lesson_id,
+                'course_id'      => $course_id,
+                'custom_time_id' => $customTimeId,
+                'name'           => $customTimeName,
+                'hours'          => $request->custom_time_credited[$index],
+            );
+        
 
             LessonTimeCredited::create([
                 'event_id'       => $event_id,
@@ -6374,9 +6381,10 @@ class TrainingEventsController extends Controller
                 'course_id'      => $course_id,
                 'custom_time_id' => $customTimeId,
                 'name'           => $customTimeName,
-                'hours'          => $request->custom_time_credited[$index],
+                'hours'          => $hours,
             ]);
         }
+       }
 
         return redirect()->back()->with('message', 'Custom time credited successfully.');
     }

@@ -1251,7 +1251,7 @@
                         </div>
                     </div>
 
-                    @if ($lesson->customTime->count())
+                    <!-- @if ($lesson->customTime->count())
                         <div class="card">
                             <div class="card-body">
                                     <h5 class="details-card-title d-flex justify-content-between align-items-center mt-3 mb-3">
@@ -1268,6 +1268,7 @@
                                                 $custom = $lesson->customTime->firstWhere('id', $ct->custom_time_id);
                                                 $allotted = $custom->given_hours ?? $custom->hours ?? '0.00';
                                             @endphp
+                                        
 
                                             <div class="border p-3 rounded mb-2 custom-time-row" data-id="{{ $ct->id }}">
                                                 <div class="row g-3 align-items-end">
@@ -1282,7 +1283,7 @@
                                                         <input type="text" class="form-control credited" name="hours" data-original="{{ $ct->hours }}" data-allotted="{{ $allotted }}" value="{{ $ct->hours }}" disabled>
                                                     </div>
 
-                                                    <!-- BUTTONS HERE (on the same row) -->
+                                                  
                                                     <div class="col-md-4">
                                                         <div class="d-flex gap-2">
                                                             <button class="btn btn-sm btn-primary editExistingBtn">Edit</button>
@@ -1351,6 +1352,101 @@
 
                                     </div>
                                 </template>
+
+                            </div>
+                        </div>
+                    @endif -->
+                    @if ($lesson->customTime->count())
+                        <div class="card">
+                            <div class="card-body">
+
+                                <h5 class="details-card-title d-flex justify-content-between align-items-center mt-3 mb-3">
+                                    Credited Time
+                                </h5>
+
+                                {{-- ================= EXISTING CREDITED TIMES ================= --}}
+                                @if($lesson->CreditedTime && $lesson->CreditedTime->count())
+                                    <div class="mt-4">
+                                        <h5>Existing Custom Times</h5>
+
+                                        @foreach($lesson->CreditedTime as $ct)
+                                            @php
+                                                $custom = $lesson->customTime->firstWhere('id', $ct->custom_time_id);
+                                                $allotted = $custom->given_hours ?? $custom->hours ?? '0.00';
+                                            @endphp
+
+                                            <div class="border p-3 rounded mb-2 custom-time-row" data-id="{{ $ct->id }}">
+                                                <div class="row g-3 align-items-end">
+
+                                                    <div class="col-md-4">
+                                                        <label class="form-label">Custom Name</label>
+                                                        <input type="text" class="form-control" value="{{ $ct->name }} - (Allotted: {{ number_format((float)$allotted, 2) }})"
+                                                            disabled >
+                                                    </div>
+
+                                                    <div class="col-md-4">
+                                                        <label class="form-label">Credited Time</label>
+                                                        <input type="text" class="form-control credited" data-original="{{ $ct->hours }}" data-allotted="{{ $allotted }}"
+                                                            value="{{ $ct->hours }}" disabled >
+                                                    </div>
+
+                                                    <div class="col-md-4">
+                                                        <div class="d-flex gap-2">
+                                                            <button class="btn btn-sm btn-primary editExistingBtn">Edit</button>
+                                                            <button class="btn btn-sm btn-danger deleteExistingBtn">Delete</button>
+                                                            <button class="btn btn-sm btn-success d-none saveExistingBtn">Save</button>
+                                                            <button class="btn btn-sm btn-secondary d-none cancelExistingBtn">Cancel</button>
+                                                        </div>
+                                                    </div>
+
+                                                </div>
+                                            </div>
+                                        @endforeach
+                                    </div>
+                                @endif
+
+                                {{-- ================= CALCULATE REMAINING ================= --}}
+                                @php
+                                    $remainingCustomTimes = $lesson->customTime->filter(function ($ct) use ($lesson) {
+                                        return !$lesson->CreditedTime->contains('custom_time_id', $ct->id);
+                                    });
+                                @endphp
+
+                                {{-- ================= ADD FORM BUTTON ================= --}}
+                                @if($remainingCustomTimes->count())
+                                    <!-- <button class="btn btn-primary" id="showAddFormBtn">Add Custom Time</button> -->
+                                @endif
+
+                                {{-- ================= ADD FORM ================= --}}
+                                <form id="customtimeForm" action="{{ route('lesson.custometime.update') }}" method="POST" class="mt-4" >
+
+                                    @csrf
+                                    <input type="hidden" name="id" value="{{ $lesson->id }}">
+                                    <input type="hidden" name="training_event_id" value="{{ $lesson->training_event_id }}">
+
+                                    @foreach($remainingCustomTimes as $ct)
+                                        <div class="row g-3 border p-3 rounded mb-2 custom-time-add-row">
+
+                                            <div class="col-md-4">
+                                                <label class="form-label">Custom Name</label>
+                                                <input type="text" class="form-control" value="{{ $ct->name }} - (Allotted: {{ number_format((float)($ct->given_hours ?? $ct->hours), 2) }})" disabled >
+
+                                                <input type="hidden" name="custom_time_id[]" value="{{ $ct->id }}">
+                                            </div>
+
+                                            <div class="col-md-4">
+                                                <label class="form-label">Credited Custom Time</label>
+                                                <input type="text" class="form-control credited-input" name="custom_time_credited[]" placeholder="Enter credited time">
+                                            </div>
+
+                                        </div>
+                                    @endforeach
+
+                                    <div class="mt-4 d-flex justify-content-end gap-2">
+                                        <button type="button" class="btn btn-secondary" id="cancelFormBtn">Cancel</button>
+                                        <button type="submit" class="btn btn-primary btn-sm">Save</button>
+                                    </div>
+                                </form>
 
                             </div>
                         </div>
@@ -4673,66 +4769,66 @@
                 let row = $(this).closest('.custom-time-add-row');
                 let input = row.find('input[name="custom_time_credited[]"]');
 
-                input.attr('data-allotted', allotted);
+              //  input.attr('data-allotted', allotted);
             });
 
-            $(document).on('input', 'input[name="custom_time_credited[]"]', function () {
-                let input = $(this);
-                let value = parseFloat(input.val()) || 0;
-                let allotted = parseFloat(input.data('allotted')) || 0;
+            // $(document).on('input', 'input[name="custom_time_credited[]"]', function () {
+            //     let input = $(this);
+            //     let value = parseFloat(input.val()) || 0;
+            //     let allotted = parseFloat(input.data('allotted')) || 0;
 
-                if (value > allotted) {
-                    input.addClass('is-invalid');
+            //     if (value > allotted) {
+            //         input.addClass('is-invalid');
 
-                    if (!input.next('.invalid-feedback').length) {
-                        input.after('<div class="invalid-feedback">Cannot exceed allotted time</div>');
-                    }
-                } else {
-                    input.removeClass('is-invalid');
-                    input.next('.invalid-feedback').remove();
-                }
-            });
+            //         if (!input.next('.invalid-feedback').length) {
+            //             input.after('<div class="invalid-feedback">Cannot exceed allotted time</div>');
+            //         }
+            //     } else {
+            //         input.removeClass('is-invalid');
+            //         input.next('.invalid-feedback').remove();
+            //     }
+            // });
 
             $('#customtimeForm').on('submit', function (e) {
                 let isValid = true;
 
-                $('input[name="custom_time_credited[]"]').each(function () {
-                    let value = parseFloat($(this).val()) || 0;
-                    let allotted = parseFloat($(this).data('allotted')) || 0;
+                // $('input[name="custom_time_credited[]"]').each(function () {
+                //     let value = parseFloat($(this).val()) || 0;
+                //     let allotted = parseFloat($(this).data('allotted')) || 0;
 
-                    if (value > allotted) {
-                        $(this).addClass('is-invalid');
-                        isValid = false;
-                    }
-                });
+                //     if (value > allotted) {
+                //         $(this).addClass('is-invalid');
+                //         isValid = false;
+                //     }
+                // });
 
-                if (!isValid) {
-                    e.preventDefault();
+                // if (!isValid) {
+                //     e.preventDefault();
 
-                    Swal.fire(
-                        "Error",
-                        "Credited time cannot exceed allotted time.",
-                        "error"
-                    );
-                }
+                //     Swal.fire(
+                //         "Error",
+                //         "Credited time cannot exceed allotted time.",
+                //         "error"
+                //     );
+                // }
             });
 
-            $(document).on('input', '.credited', function () {
-                let input = $(this);
-                let value = parseFloat(input.val()) || 0;
-                let allotted = parseFloat(input.data('allotted')) || 0;
+            // $(document).on('input', '.credited', function () {
+            //     let input = $(this);
+            //     let value = parseFloat(input.val()) || 0;
+            //     let allotted = parseFloat(input.data('allotted')) || 0;
 
-                if (value > allotted) {
-                    input.addClass('is-invalid');
+            //     if (value > allotted) {
+            //         input.addClass('is-invalid');
 
-                    if (!input.next('.invalid-feedback').length) {
-                        input.after('<div class="invalid-feedback">Cannot exceed allotted time</div>');
-                    }
-                } else {
-                    input.removeClass('is-invalid');
-                    input.next('.invalid-feedback').remove();
-                }
-            });
+            //         if (!input.next('.invalid-feedback').length) {
+            //             input.after('<div class="invalid-feedback">Cannot exceed allotted time</div>');
+            //         }
+            //     } else {
+            //         input.removeClass('is-invalid');
+            //         input.next('.invalid-feedback').remove();
+            //     }
+            // });
 
             $(document).on('click', '.editExistingBtn', function () {
                 let row = $(this).closest('.custom-time-row');
@@ -4747,12 +4843,12 @@
                 let input = row.find('.credited');
                 let id    = row.data('id');
                 let value = row.find('.credited').val();
-                let allotted = parseFloat(input.data('allotted')) || 0;
+                // let allotted = parseFloat(input.data('allotted')) || 0;
 
-                if (value > allotted) {
-                    Swal.fire("Error", "Credited time cannot exceed allotted time.", "error");
-                    return;
-                }                
+                // if (value > allotted) {
+                //     Swal.fire("Error", "Credited time cannot exceed allotted time.", "error");
+                //     return;
+                // }                
 
                 $.ajax({
                     url: "/lesson/customtime/update/" + id,
