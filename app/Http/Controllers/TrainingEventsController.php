@@ -5383,7 +5383,8 @@ class TrainingEventsController extends Controller
         //     ]);
         // }
         if (in_array($event->entry_source, ['instructor', 'examiner']) && $event->course->teach_track == 1) {
-            $baseDate =  Carbon::parse($event->event_date); 
+            // $baseDate =  Carbon::parse($event->event_date); 
+            $baseDate =  Carbon::parse($event->completion_date);
 
             $validityMonths = (int) ($event->course->validity ?? 0);
             $teachExtend    = (int) ($event->course->teach_extend_validity ?? 0);
@@ -6695,4 +6696,23 @@ class TrainingEventsController extends Controller
             ], 404);
         }
     }
+
+    public function saveCompletionDate(Request $request)
+    {
+        $updated = TrainingEvents::where('id', $request->event_id)->update([ 'completion_date' => $request->completion_date ]);
+
+        if ($updated) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Completion date saved successfully.'
+            ]);
+        } else {
+            return response()->json([
+                'success' => false,
+                'message' => 'Record not found or already updated.'
+            ], 404);
+        }
+    }
+
+
 }
