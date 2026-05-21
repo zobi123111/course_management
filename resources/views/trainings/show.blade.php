@@ -973,8 +973,8 @@
                                     ?>
 
                                     <div class="col-md-4 mt-3">
-                                        <h6 class="text-muted mb-1">
-                                            <i class="text-primary fas fa-id-card me-1"></i>{{ $instLabel }}
+                                        <h6 class="text-dark fw-bold">
+                                           <i class="text-primary fas fa-id-card me-1"></i>    {{ $instLabel }} 
                                         </h6>
                                         <p class="mb-0 fw-semibold">{{ $instructorLicence }}</p>
                                     </div>
@@ -992,16 +992,23 @@
                                         @endif
                                     </div>
 
-                                    <!-- <div class="col-md-2 mt-3">
-                                        <strong><i class="text-primary fas fa-clock"></i> Start:</strong><br>
-                                        {{ date('H:i', strtotime($lesson->start_time)) }}
-                                    </div> -->
+                                    <div class="col-md-2 mt-3">
+                                        @php $lessonType = $lesson?->lesson?->lesson_type ?? null; @endphp
+                                        <strong><i class="text-primary fas fa-chalkboard-teacher"></i> Lesson Type:</strong><br>
+                                        {{ ucfirst($lessonType) ?? 'N/A' }}
+                                    </div>
                                     
                                     @php 
                                         $lessonType = $lesson?->lesson?->lesson_type ?? null; 
                                         $isGroundschool = ($lessonType === 'groundschool');
                                     @endphp
-                                    
+                                
+                                    @if($lessonType != 'groundschool')
+                                        <div class="col-md-2 mt-3">
+                                            <strong><i class="text-primary fas fa-plane-departure"></i> Depart:</strong><br>
+                                            {{ $lesson->departure_airfield ?? 'N/A' }}
+                                        </div>
+                                    @endif
                                     
                                     <div class="col-md-2 mt-3">
                                         <strong>
@@ -1016,6 +1023,14 @@
                                         -
                                         @endif
                                     </div>
+
+                                    @if($lessonType != 'groundschool')
+
+                                        <div class="col-md-2 mt-3">
+                                            <strong><i class="text-primary fas fa-plane-arrival"></i> Arrive:</strong><br>
+                                            {{ $lesson->destination_airfield ?? 'N/A' }}
+                                        </div>
+                                    @endif
 
                                     <div class="col-md-2 mt-3">
                                         <strong>
@@ -1036,23 +1051,9 @@
                                             {{ date('H:i', strtotime($lesson->end_time)) }}
                                         </div> -->
 
-                                    @if($lessonType != 'groundschool')
-                                        <div class="col-md-2 mt-3">
-                                            <strong><i class="text-primary fas fa-plane-departure"></i> Depart:</strong><br>
-                                            {{ $lesson->departure_airfield ?? 'N/A' }}
-                                        </div>
+                               
 
-                                        <div class="col-md-2 mt-3">
-                                            <strong><i class="text-primary fas fa-plane-arrival"></i> Arrive:</strong><br>
-                                            {{ $lesson->destination_airfield ?? 'N/A' }}
-                                        </div>
-                                    @endif
-
-                                    <div class="col-md-2 mt-3">
-                                        @php $lessonType = $lesson?->lesson?->lesson_type ?? null; @endphp
-                                        <strong><i class="text-primary fas fa-chalkboard-teacher"></i> Lesson Type:</strong><br>
-                                        {{ ucfirst($lessonType) ?? 'N/A' }}
-                                    </div>
+                                 
 
                                     @if($lessonType === 'groundschool')
                                         <div class="col-md-2 mt-3">
@@ -1210,17 +1211,54 @@
                                                     </thead>
                                                     <tbody>
                                                         @foreach($multipleCustomTimes as $ct)
-                                                            @php
+                                                            <?php
+                                                               // $credited = $creditedTimes->firstWhere('custom_time_id', $ct->id);
+
+                                                                // $allotted = (float) ($ct->given_hours ?? $ct->hours ?? 0);
+                                                                // $creditedHours = (float) ($credited->hours ?? 0);
+                                                                // $remaining = max($allotted - $creditedHours, 0);
+                                                                // $remainingFormatted = number_format($remaining, 2);
+                                                                // dump($allotted);
+                                                                // dump($creditedHours);
+                                                                // Your existing logic
+                                                          if (!function_exists('toMinutes')) {
+                                                            function toMinutes($value)
+                                                            {
+                                                                $value = (string) $value;
+                                                                $parts = explode('.', $value);
+
+                                                                $hours = (int) ($parts[0] ?? 0);
+                                                                $minutes = (int) ($parts[1] ?? 0);
+
+                                                                return ($hours * 60) + $minutes;
+                                                            }
+                                                        }
+
+                                                        if (!function_exists('fromMinutes')) {
+                                                            function fromMinutes($totalMinutes)
+                                                            {
+                                                                $hours = floor($totalMinutes / 60);
+                                                                $minutes = $totalMinutes % 60;
+
+                                                                return $hours . '.' . str_pad($minutes, 2, '0', STR_PAD_LEFT);
+                                                            }
+                                                        }
                                                                 $credited = $creditedTimes->firstWhere('custom_time_id', $ct->id);
 
-                                                                $allotted = (float) ($ct->given_hours ?? $ct->hours ?? 0);
-                                                                $creditedHours = (float) ($credited->hours ?? 0);
+                                                                $allotted = $ct->given_hours ?? $ct->hours ?? 0;
+                                                                $creditedHours = $credited->hours ?? 0;
 
-                                                                $remaining = max($allotted - $creditedHours, 0);
+                                                                // Convert both to minutes
+                                                                $allottedMin = toMinutes($allotted);
+                                                                $creditedMin = toMinutes($creditedHours);
 
-                                                                // format to 2 decimal (like your DB)
-                                                                $remainingFormatted = number_format($remaining, 2);
-                                                            @endphp
+                                                                // Calculate remaining
+                                                                $remainingMin = max($allottedMin - $creditedMin, 0);
+
+                                                                // Convert back to display format
+                                                                $remainingFormatted = fromMinutes($remainingMin);
+                                                             
+                                                            ?>
 
                                                             <tr class="text-center">
                                                                 <td>{{ $ct->name }}</td>
@@ -1321,6 +1359,8 @@
                                                     $lessonType = $lesson?->lesson?->lesson_type ?? null; 
                                                     $isGroundschool = ($lessonType === 'groundschool');
                                                 @endphp
+
+                                         
                                                 
                                                 <div class="col-md-2 mt-3">
                                                     <strong>
@@ -1681,6 +1721,19 @@
                                         {{ date('d-m-Y', strtotime($def->lesson_date)) }}
                                     </div>
 
+                                    <div class="col-md-2 mt-2">
+                                        <strong><i class="text-primary fas fa-chalkboard-teacher"></i> Lesson Type:</strong><br>
+
+                                        {{ ucfirst($def->deftasks?->subddddLesson?->courseLesson?->lesson_type ?? 'N/A') }}
+
+                                    </div>
+                                    @if($lessonType != 'groundschool')
+                                        <div class="col-md-2 mt-2">
+                                            <strong><i class="text-primary fas fa-plane-departure"></i> Depart:</strong><br>
+                                            {{ strtoupper($def->departure_airfield) ?? 'N/A' }}
+                                        </div>
+                                    @endif
+
                                     @php 
                                         $lessonType = $def->deftasks?->subddddLesson?->courseLesson?->lesson_type ?? null; 
                                         $isGroundschool = ($lessonType === 'groundschool');
@@ -1694,6 +1747,14 @@
                                         {{ date('H:i', strtotime($def->start_time)) }}
                                     </div>
 
+                                    @if($lessonType != 'groundschool')
+
+                                        <div class="col-md-2 mt-2">
+                                            <strong><i class="text-primary fas fa-plane-arrival"></i> Arrive:</strong><br>
+                                            {{ strtoupper($def->destination_airfield) ?? 'N/A' }}
+                                        </div>
+                                    @endif
+
                                     <div class="col-md-2 mt-2">
                                         <strong>
                                             <i class="text-primary fas fa-clock"></i>
@@ -1702,23 +1763,8 @@
                                         {{ date('H:i', strtotime($def->end_time)) }}
                                     </div>
 
-                                    @if($lessonType != 'groundschool')
-                                        <div class="col-md-2 mt-2">
-                                            <strong><i class="text-primary fas fa-plane-departure"></i> Depart:</strong><br>
-                                            {{ strtoupper($def->departure_airfield) ?? 'N/A' }}
-                                        </div>
-
-                                        <div class="col-md-2 mt-2">
-                                            <strong><i class="text-primary fas fa-plane-arrival"></i> Arrive:</strong><br>
-                                            {{ strtoupper($def->destination_airfield) ?? 'N/A' }}
-                                        </div>
-                                    @endif
-                                    <div class="col-md-2 mt-2">
-                                        <strong><i class="text-primary fas fa-chalkboard-teacher"></i> Lesson Type:</strong><br>
-
-                                        {{ ucfirst($def->deftasks?->subddddLesson?->courseLesson?->lesson_type ?? 'N/A') }}
-
-                                    </div>
+                               
+                                 
                                     <div class="col-md-2 mt-2">
                                         <strong><i class="text-primary fas fa-hourglass-half"></i> Block Hours:</strong><br>
                                         {{ $def->defLesson->hours_credited ?? '00:00' }}
@@ -1995,6 +2041,19 @@
                                 {{ date('d-m-Y', strtotime($def->lesson_date)) }}
                             </div>
 
+                            <div class="col-md-2 mt-2">
+                                <strong><i class="text-primary fas fa-chalkboard-teacher"></i> Lesson Type:</strong><br>
+                                {{ ucfirst($def->deftasks?->subddddLesson?->courseLesson?->lesson_type ?? 'N/A') }}
+
+                            </div>
+
+                            @if($lessonType != 'groundschool')
+                                <div class="col-md-2 mt-2">
+                                    <strong><i class="text-primary fas fa-plane-departure"></i> Depart:</strong><br>
+                                    {{ strtoupper($def->departure_airfield) ?? 'N/A' }}
+                                </div>
+                            @endif
+
                             @php 
                                 $lessonType = $def->deftasks?->subddddLesson?->courseLesson?->lesson_type ?? null; 
                                 $isGroundschool = ($lessonType === 'groundschool');
@@ -2007,6 +2066,13 @@
                                 </strong><br>
                                 {{ date('H:i', strtotime($def->start_time)) }}
                             </div>
+                            @if($lessonType != 'groundschool')
+
+                                <div class="col-md-2 mt-2">
+                                    <strong><i class="text-primary fas fa-plane-arrival"></i> Arrive:</strong><br>
+                                    {{ strtoupper($def->destination_airfield) ?? 'N/A' }}
+                                </div>
+                            @endif
 
                             <div class="col-md-2 mt-2">
                                 <strong>
@@ -2016,23 +2082,7 @@
                                 {{ date('H:i', strtotime($def->end_time)) }}
                             </div>
 
-                            @if($lessonType != 'groundschool')
-                                <div class="col-md-2 mt-2">
-                                    <strong><i class="text-primary fas fa-plane-departure"></i> Depart:</strong><br>
-                                    {{ strtoupper($def->departure_airfield) ?? 'N/A' }}
-                                </div>
-
-                                <div class="col-md-2 mt-2">
-                                    <strong><i class="text-primary fas fa-plane-arrival"></i> Arrive:</strong><br>
-                                    {{ strtoupper($def->destination_airfield) ?? 'N/A' }}
-                                </div>
-                            @endif
-
-                            <div class="col-md-2 mt-2">
-                                <strong><i class="text-primary fas fa-chalkboard-teacher"></i> Lesson Type:</strong><br>
-                                {{ ucfirst($def->deftasks?->subddddLesson?->courseLesson?->lesson_type ?? 'N/A') }}
-
-                            </div>
+                       
                             <div class="col-md-2 mt-2">
                                 <strong><i class="text-primary fas fa-hourglass-half"></i> Block Hours:</strong><br>
                                 {{ $def->defLesson->hours_credited ?? '00:00' }}
