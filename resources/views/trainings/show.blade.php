@@ -722,7 +722,24 @@
                     </button>
                 </li> -->
                 @endif
+                
+                @if(auth()->user()->role == 1 || auth()->user()->role == 18 || auth()->user()->role == 20)
+                    <li class="ms-auto list-unstyled">
+                        @if($trainingEvent->completion_date)
+                            <strong class="form-label me-2">Course Completion Date: {{ $trainingEvent->completion_date ? \Carbon\Carbon::parse($trainingEvent->completion_date)->format('d/m/Y') : 'N/A' }}</strong>
+                            <button class="btn btn-primary" type="button" data-bs-toggle="modal" data-bs-target="#completionDateModal">
+                                <i class="bi bi-pencil"></i>
+                            </button>
+                        @else
+                            <button class="btn btn-primary" type="button" data-bs-toggle="modal" data-bs-target="#completionDateModal">
+                                Add Course Completion Date
+                            </button>
+                        @endif
+                    </li>
+                @endif
             </ul>
+            
+
             <div class="tab-content pt-2" id="myTabContent">
                 <div class="tab-pane fade p-3 active show" id="overview" role="tabpanel" aria-labelledby="overview-tab">
                     <div class="card shadow-sm p-4 border-0">
@@ -1003,7 +1020,7 @@
                                         $isGroundschool = ($lessonType === 'groundschool');
                                     @endphp
                                 
-                                    @if($lessonType != 'groundschool')
+                                    @if(isset($lessonType) && $lessonType != 'groundschool')
                                         <div class="col-md-2 mt-3">
                                             <strong><i class="text-primary fas fa-plane-departure"></i> Depart:</strong><br>
                                             {{ $lesson->departure_airfield ?? 'N/A' }}
@@ -1024,7 +1041,7 @@
                                         @endif
                                     </div>
 
-                                    @if($lessonType != 'groundschool')
+                                    @if(isset($lessonType) && $lessonType != 'groundschool')
 
                                         <div class="col-md-2 mt-3">
                                             <strong><i class="text-primary fas fa-plane-arrival"></i> Arrive:</strong><br>
@@ -1101,7 +1118,7 @@
                                     <!-- // Operation -->
                                     <?php
                                     ?>
-                                    @if($lessonType != 'groundschool')
+                                    @if(isset($lessonType) && $lessonType != 'groundschool')
                                         @if(!empty($lesson->operation1))
                                             <div class="col-md-2 mt-3">
                                                 <strong><i class="text-primary fas fa-hourglass-half"></i> Operation:</strong><br>
@@ -1385,7 +1402,7 @@
                                                     @endif
                                                 </div>
 
-                                                @if($lessonType != 'groundschool')
+                                                @if(isset($lessonType) && $lessonType != 'groundschool')
                                                     <div class="col-md-2 mt-3">
                                                         <strong><i class="text-primary fas fa-plane-departure"></i> Depart:</strong><br>
                                                         {{ $sector->departure_airfield ?? 'N/A' }}
@@ -1428,7 +1445,7 @@
                                                     {{ $sectorfinalTime }}
                                                 </div>
 
-                                                @if($lessonType != 'groundschool')
+                                                @if(isset($lessonType) && $lessonType != 'groundschool')
                                                     <!-- // Operation -->
                                                     @if(!empty($lesson->operation1))
                                                         <div class="col-md-2 mt-3">
@@ -1727,7 +1744,7 @@
                                         {{ ucfirst($def->deftasks?->subddddLesson?->courseLesson?->lesson_type ?? 'N/A') }}
 
                                     </div>
-                                    @if($lessonType != 'groundschool')
+                                    @if(isset($lessonType) && $lessonType != 'groundschool')
                                         <div class="col-md-2 mt-2">
                                             <strong><i class="text-primary fas fa-plane-departure"></i> Depart:</strong><br>
                                             {{ strtoupper($def->departure_airfield) ?? 'N/A' }}
@@ -1747,7 +1764,7 @@
                                         {{ date('H:i', strtotime($def->start_time)) }}
                                     </div>
 
-                                    @if($lessonType != 'groundschool')
+                                    @if(isset($lessonType) && $lessonType != 'groundschool')
 
                                         <div class="col-md-2 mt-2">
                                             <strong><i class="text-primary fas fa-plane-arrival"></i> Arrive:</strong><br>
@@ -1770,7 +1787,7 @@
                                         {{ $def->defLesson->hours_credited ?? '00:00' }}
                                     </div>
 
-                                    @if($lessonType != 'groundschool')
+                                    @if(isset($lessonType) && $lessonType != 'groundschool')
                                         @if($def->operation != 0)
                                             <div class="col-md-2 mt-2">
                                                 <strong><i class="text-primary fas fa-hourglass-half"></i> Operation:</strong><br>
@@ -1846,7 +1863,7 @@
                                                     @endif
                                                 </div>
 
-                                                @if($lessonType != 'groundschool')
+                                                @if(isset($lessonType) && $lessonType != 'groundschool')
                                                     <div class="col-md-2 mt-3">
                                                         <strong><i class="text-primary fas fa-plane-departure"></i> Depart:</strong><br>
                                                         {{ $sector->departure_airfield ?? 'N/A' }}
@@ -1888,7 +1905,7 @@
                                                     {{ $sectorfinalTime }}
                                                 </div>
 
-                                                @if($lessonType != 'groundschool')
+                                                @if(isset($lessonType) && $lessonType != 'groundschool')
                                                     <!-- // Operation -->
                                                     @if(!empty($lesson->operation1))
                                                         <div class="col-md-2 mt-3">
@@ -2047,7 +2064,7 @@
 
                             </div>
 
-                            @if($lessonType != 'groundschool')
+                            @if(isset($lessonType) && $lessonType != 'groundschool')
                                 <div class="col-md-2 mt-2">
                                     <strong><i class="text-primary fas fa-plane-departure"></i> Depart:</strong><br>
                                     {{ strtoupper($def->departure_airfield) ?? 'N/A' }}
@@ -2066,7 +2083,7 @@
                                 </strong><br>
                                 {{ date('H:i', strtotime($def->start_time)) }}
                             </div>
-                            @if($lessonType != 'groundschool')
+                            @if(isset($lessonType) && $lessonType != 'groundschool')
 
                                 <div class="col-md-2 mt-2">
                                     <strong><i class="text-primary fas fa-plane-arrival"></i> Arrive:</strong><br>
@@ -2088,7 +2105,7 @@
                                 {{ $def->defLesson->hours_credited ?? '00:00' }}
                             </div>
 
-                            @if($lessonType != 'groundschool')
+                            @if(isset($lessonType) && $lessonType != 'groundschool')
                                 @if($def->operation != 0)
                                 <div class="col-md-2 mt-2">
                                     <strong><i class="text-primary fas fa-hourglass-half"></i> Operation:</strong><br>
@@ -2164,7 +2181,7 @@
                                             @endif
                                         </div>
 
-                                        @if($lessonType != 'groundschool')
+                                        @if(isset($lessonType) && $lessonType != 'groundschool')
                                             <div class="col-md-2 mt-3">
                                                 <strong><i class="text-primary fas fa-plane-departure"></i> Depart:</strong><br>
                                                 {{ $sector->departure_airfield ?? 'N/A' }}
@@ -2205,7 +2222,7 @@
                                             {{ $sectorfinalTime }}
                                         </div>
 
-                                        @if($lessonType != 'groundschool')
+                                        @if(isset($lessonType) && $lessonType != 'groundschool')
                                             <!-- // Operation -->
                                             @if(!empty($lesson->operation1))
                                                 <div class="col-md-2 mt-3">
@@ -3900,12 +3917,73 @@
                 </form>
             </div>
         </div><!-- End Default Tabs -->
+
+        <!-- Modal -->
+        <div class="modal fade" id="completionDateModal" tabindex="-1" aria-labelledby="completionDateModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+
+                    <form id="completionDateForm">
+                        <div class="modal-header">
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+
+                        <div class="modal-body">
+                            <div class="mb-3">
+                                <label for="completion_date" class="form-label"> Course Completion Date </label>
+                                <input type="hidden" class="form-control" id="event_id" value="{{ $trainingEvent->id }}" name="event_id">
+                                <input type="date" class="form-control" id="completion_date" value="{{ $trainingEvent->completion_date ? \Carbon\Carbon::parse($trainingEvent->completion_date)->format('Y-m-d') : '' }}" name="completion_date" required>
+                            </div>
+                        </div>
+
+                        <div class="modal-footer">
+                            <button type="submit" class="btn btn-success"> Submit </button>
+                        </div>
+                    </form>
+
+                </div>
+            </div>
+        </div>
     </div>
     </div>
     @endsection
 
     @section('js_scripts')
 
+    <script>
+        document.getElementById('completionDateForm').addEventListener('submit', function (e) {
+            e.preventDefault();
+
+            let event_id = document.getElementById('event_id').value;
+            let completionDate = document.getElementById('completion_date').value;
+
+            fetch('/save-completion-date', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                },
+                body: JSON.stringify({
+                    event_id: event_id,
+                    completion_date: completionDate
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    let modal = bootstrap.Modal.getInstance(document.getElementById('completionDateModal'));
+                    modal.hide();
+                    location.reload();
+                } else {
+                    alert(data.message || 'Something went wrong');
+                }
+            })
+            .catch(error => {
+                console.error(error);
+                alert('Error occurred');
+            });
+        });
+    </script>
 
     <script>
         const fileStore = {};
