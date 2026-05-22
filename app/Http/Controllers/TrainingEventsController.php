@@ -2990,8 +2990,6 @@ class TrainingEventsController extends Controller
             ->with('cbta')
             ->get();
 
-    ;
-
         $customGrouped = $custom_grading->groupBy(['lesson_id', 'competency_type']);
 
         $customFinal = [];
@@ -3103,7 +3101,7 @@ class TrainingEventsController extends Controller
             'flight'            => 0,
             'deferred'          => 0,
             'customDuration'    => 0,
-            'lessonCreditedTime'=> 0
+            'lessonCreditedTime'=> 0,
         ];
 
         /* -------------------------
@@ -3111,7 +3109,7 @@ class TrainingEventsController extends Controller
         ------------------------- */
         foreach ($event->eventLessons as $lesson) {
 
-            $type = $lesson->lesson->lesson_type ?? null;
+            $type = $lesson->lesson_type ?? null;
 
             $credited = toSeconds($lesson->hours_credited);
 
@@ -3175,14 +3173,6 @@ class TrainingEventsController extends Controller
                 if ($start && $end && $end > $start) {
                     $totalSectorblockTime += ($end - $start);
                 }
-            }
-        }
-
-        foreach ($event->eventLessons as $lesson) {
-            $t  = strtotime($lesson->start_time);
-            $l  = strtotime($lesson->end_time);
-            if ($t && $l && $l > $t) {
-                $totalSectorblockTime += ($l - $t);
             }
         }
 
@@ -3299,10 +3289,19 @@ class TrainingEventsController extends Controller
         $TotalBlockCredited =
             // $lessonFlightTime +
             $totals['deferred'] +
+            $totals['flight'] +
             $totals['customDuration'] +
             // $sectorFlightTime +
             $totals['lessonCreditedTime'];
 
+            // dd(
+            //    formatSeconds($totals['deferred']),
+            //    formatSeconds($totals['flight']),
+            //    formatSeconds($totals['customDuration']),
+            //    formatSeconds($totals['lessonCreditedTime']),
+            //    formatSeconds($totalSectorblockTime),
+            //    formatSeconds($TotalBlockCredited),
+            // );
         // Add sector block time
         $blockCredited = $totalSectorblockTime + $TotalBlockCredited;
         
@@ -3795,7 +3794,7 @@ class TrainingEventsController extends Controller
         ------------------------- */
         foreach ($event->eventLessons as $lesson) {
 
-            $type = $lesson->lesson->lesson_type ?? null;
+            $type = $lesson->lesson_type ?? null;
 
             // Hours credited
             $credited = toSeconds($lesson->hours_credited);
@@ -3814,41 +3813,6 @@ class TrainingEventsController extends Controller
         }
 
         /* -------------------------
-        DEFERRED LESSON DURATION
-        ------------------------- */
-        foreach ($event->defLessons as $def) {
-            $start = strtotime($def->start_time);
-            $end   = strtotime($def->end_time);
-            if ($start && $end && $end > $start) {
-                $totals['deferred'] += ($end - $start);
-            }
-        }
-
-        /* -------------------------
-        CUSTOM SECTORS PER DEF LESSON
-        ------------------------- */
-        foreach ($event->defLessons as $def) {
-
-            // deferred sectors
-            foreach ($def->deferredSectors as $sec) {
-                $s = strtotime($sec->start_time);
-                $e = strtotime($sec->end_time);
-                if ($s && $e && $e > $s) {
-                    $totals['customDuration'] += ($e - $s);
-                }
-            }
-
-            // custom sectors
-            foreach ($def->customSectors as $sec) {
-                $s = strtotime($sec->start_time);
-                $e = strtotime($sec->end_time);
-                if ($s && $e && $e > $s) {
-                    $totals['customDuration'] += ($e - $s);
-                }
-            }
-        }
-
-        /* -------------------------
         SECTOR BLOCK TIME
         ------------------------- */
         $totalSectorblockTime = 0;
@@ -3863,58 +3827,6 @@ class TrainingEventsController extends Controller
             }
         }
 
-        foreach ($event->eventLessons as $lesson) {
-            $t  = strtotime($lesson->start_time);
-            $l  = strtotime($lesson->end_time);
-            if ($t && $l && $l > $t) {
-                $totalSectorblockTime += ($l - $t);
-            }
-        }
-
-        foreach ($event->defLessons as $def) {
-            foreach ($def->deferredSectors as $s) {
-                $start = strtotime($s->start_time);
-                $end   = strtotime($s->end_time);
-                if ($start && $end && $end > $start) {
-                    $totalSectorblockTime += ($end - $start);
-                }
-            }
-
-            foreach ($def->customSectors as $s) {
-                $start = strtotime($s->start_time);
-                $end   = strtotime($s->end_time);
-                if ($start && $end && $end > $start) {
-                    $totalSectorblockTime += ($end - $start);
-                }
-            }
-        }
-
-        /* -------------------------
-        SECTOR FLIGHT TIME
-        ------------------------- */
-        $sectorFlightTime = 0;
-
-        foreach ($event->eventLessons as $lesson) {
-            foreach ($lesson->sectors as $sector) {
-                $t  = strtotime($sector->takeoff_time);
-                $l  = strtotime($sector->landing_time);
-                if ($t && $l && $l > $t) {
-                    $sectorFlightTime += ($l - $t);
-                }
-            }
-        }
-
-        /* -------------------------------------------------------
-            FINAL FORMULAS (same as Blade)
-        ------------------------------------------------------- */
-
-        // Total Flight Time
-        // $totalFlightTime =
-        //     $totals['flight'] +
-        //     $totals['deferred'] +
-        //     $totals['customDuration'] +
-        //     $sectorFlightTime;
-
         $lessonFlightTime = 0;
 
         foreach ($event->eventLessons as $lesson) {
@@ -3923,20 +3835,6 @@ class TrainingEventsController extends Controller
 
             if ($takeoff && $landing && $landing > $takeoff) {
                 $lessonFlightTime += ($landing - $takeoff);
-            }
-        }
-
-        /* ----------------------------
-            DEFERRED LESSON FLIGHT TIME
-        ---------------------------- */
-        $deferredFlightTime = 0;
-
-        foreach ($event->defLessons as $def) {
-            $takeoff = strtotime($def->takeoff_time);
-            $landing = strtotime($def->landing_time);
-
-            if ($takeoff && $landing && $landing > $takeoff) {
-                $deferredFlightTime += ($landing - $takeoff);
             }
         }
 
@@ -3957,33 +3855,11 @@ class TrainingEventsController extends Controller
             }
         }
 
-        // deferred lesson sectors
-        foreach ($event->defLessons as $def) {
-            foreach ($def->deferredSectors as $sector) {
-                $t = strtotime($sector->takeoff_time);
-                $l = strtotime($sector->landing_time);
-
-                if ($t && $l && $l > $t) {
-                    $sectorFlightTime += ($l - $t);
-                }
-            }
-
-            foreach ($def->customSectors as $sector) {
-                $t = strtotime($sector->takeoff_time);
-                $l = strtotime($sector->landing_time);
-
-                if ($t && $l && $l > $t) {
-                    $sectorFlightTime += ($l - $t);
-                }
-            }
-        }
-
         /* ----------------------------
             FINAL FLIGHT TIME
         ---------------------------- */
         $totalFlightTime =
             $lessonFlightTime +
-            $deferredFlightTime +
             $sectorFlightTime;
 
         
@@ -3991,7 +3867,7 @@ class TrainingEventsController extends Controller
         // Total Block Credited (blade logic)
         $TotalBlockCredited =
             // $lessonFlightTime +
-            $totals['deferred'] +
+            $totals['flight'] +
             $totals['customDuration'] +
             // $sectorFlightTime +
             $totals['lessonCreditedTime'];
