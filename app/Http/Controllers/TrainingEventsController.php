@@ -4381,10 +4381,11 @@ class TrainingEventsController extends Controller
 
         // Total Block Credited (blade logic)
         $TotalBlockCredited =
-            $lessonFlightTime +
+            // $lessonFlightTime +
+            $totals['flight'] +
             $totals['deferred'] +
             $totals['customDuration'] +
-            $sectorFlightTime +
+            // $sectorFlightTime +
             $totals['lessonCreditedTime'];
 
         // Add sector block time

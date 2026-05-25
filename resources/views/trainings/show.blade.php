@@ -991,7 +991,7 @@
 
                                     <div class="col-md-4 mt-3">
                                         <h6 class="text-dark fw-bold">
-                                           <i class="text-primary fas fa-id-card me-1"></i>    {{ $instLabel }} 
+                                           <strong> <i class="text-primary fas fa-id-card me-1"></i> {{ $instLabel }} </strong>
                                         </h6>
                                         <p class="mb-0 fw-semibold">{{ $instructorLicence }}</p>
                                     </div>
@@ -1348,8 +1348,8 @@
                                                 ?>
 
                                                 <div class="col-md-4 mt-3">
-                                                    <h6 class="text-muted mb-1">
-                                                        <i class="text-primary fas fa-id-card me-1"></i>{{ $instLabel }}
+                                                    <h6 class="text-dark mb-1">
+                                                        <strong><i class="text-primary fas fa-id-card me-1"></i>{{ $instLabel }} </strong>
                                                     </h6>
                                                     <p class="mb-0 fw-semibold">{{ $instructorLicence }}</p>
                                                 </div>
@@ -1372,12 +1372,24 @@
                                                     @endif
                                                 </div>
 
+                                                <div class="col-md-2 mt-3">
+                                                    @php $lessonType = $lesson?->lesson?->lesson_type ?? null; @endphp
+                                                    <strong><i class="text-primary fas fa-chalkboard-teacher"></i> Lesson Type:</strong><br>
+                                                    {{ ucfirst($lessonType) ?? 'N/A' }}
+                                                </div>
+
                                                 @php 
                                                     $lessonType = $lesson?->lesson?->lesson_type ?? null; 
                                                     $isGroundschool = ($lessonType === 'groundschool');
                                                 @endphp
 
                                          
+                                                @if(isset($lessonType) && $lessonType != 'groundschool')
+                                                    <div class="col-md-2 mt-3">
+                                                        <strong><i class="text-primary fas fa-plane-departure"></i> Depart:</strong><br>
+                                                        {{ $sector->departure_airfield ?? 'N/A' }}
+                                                    </div>
+                                                @endif
                                                 
                                                 <div class="col-md-2 mt-3">
                                                     <strong>
@@ -1390,6 +1402,14 @@
                                                         -
                                                     @endif
                                                 </div>
+
+                                                @if(isset($lessonType) && $lessonType != 'groundschool')
+                                                    <div class="col-md-2 mt-3">
+                                                        <strong><i class="text-primary fas fa-plane-arrival"></i> Arrive:</strong><br>
+                                                        {{ $sector->destination_airfield ?? 'N/A' }}
+                                                    </div>
+                                                @endif
+
                                                 <div class="col-md-2 mt-3">
                                                     <strong>
                                                         <i class="text-primary fas fa-clock"></i>
@@ -1400,24 +1420,6 @@
                                                     @else
                                                         -
                                                     @endif
-                                                </div>
-
-                                                @if(isset($lessonType) && $lessonType != 'groundschool')
-                                                    <div class="col-md-2 mt-3">
-                                                        <strong><i class="text-primary fas fa-plane-departure"></i> Depart:</strong><br>
-                                                        {{ $sector->departure_airfield ?? 'N/A' }}
-                                                    </div>
-
-                                                    <div class="col-md-2 mt-3">
-                                                        <strong><i class="text-primary fas fa-plane-arrival"></i> Arrive:</strong><br>
-                                                        {{ $sector->destination_airfield ?? 'N/A' }}
-                                                    </div>
-                                                @endif
-
-                                                <div class="col-md-2 mt-3">
-                                                    @php $lessonType = $lesson?->lesson?->lesson_type ?? null; @endphp
-                                                    <strong><i class="text-primary fas fa-chalkboard-teacher"></i> Lesson Type:</strong><br>
-                                                    {{ ucfirst($lessonType) ?? 'N/A' }}
                                                 </div>
 
                                                 @php
@@ -2856,7 +2858,7 @@
                                         $TotalBlockCredited = $totals['flight']['credited']
                                                             + $totals['deferred']
                                                             + $totals['customDuration']
-                                                            + $sectorFlightTime
+                                                            // + $sectorFlightTime
                                                             + $totals['lessonCreditedTime'];
 
                                         

@@ -62,6 +62,10 @@ class DashboardController extends Controller
 
             $expiringSoonEvents = $trainingEvents->filter(function ($event) {
 
+                if ($event->is_locked == 1) {
+                    return false;
+                }
+
                 $startDate = Carbon::parse($event->course_end_validity);
 
                 $expiryDate = $startDate->copy()
