@@ -6114,6 +6114,14 @@ class TrainingEventsController extends Controller
             }
         }
         
+
+        if($request->has('hours_credited')){
+            $credit = $request->hours_credited;
+        }
+        else{
+            $credit = $creditMinutes;
+        }
+
         if($request->has('lessontype')){
             $lesson = DefLesson::where('id', $request->id)->first();
 
@@ -6142,7 +6150,7 @@ class TrainingEventsController extends Controller
                 // 'lesson_date'          => $request->lesson_date,
                 'start_time'           => $request->start_time,
                 'end_time'             => $request->end_time,
-                'hours_credited'       => gmdate("H:i", $creditMinutes * 60),
+                'hours_credited'       => $credit,
                 'departure_airfield'   => $request->departure_airfield,
                 'destination_airfield' => $request->destination_airfield,
                 'operation1' => $request->operation,

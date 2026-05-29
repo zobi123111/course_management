@@ -493,7 +493,7 @@ class UserController extends Controller
 
             $licenceFileUploaded = $document?->licence_file_uploaded ?? false;
 
-            $licenceFileUploaded = false;
+            // $licenceFileUploaded = false;
 
             if ($userToUpdate->licence_required == 1) {
                 if ($request->hasFile('licence_file')) {
@@ -787,7 +787,8 @@ class UserController extends Controller
                     ? true
                     : ($document?->licence_file_uploaded ?? false),
 
-
+                'licence_verified' => $request->hasFile('licence_file') ? 0 : ($document?->licence_verified ?? 0),
+                
                 'licence_2' => $request->licence_2 ?? null,
                 'licence_file_2' => $licenceFilePath_2 ?? null,
                 'licence_expiry_date_2' => $request->licence_expiry_date_2 ?? null,
@@ -801,7 +802,8 @@ class UserController extends Controller
                 'passport_expiry_date' => $request->passport_expiry_date ?? null,
                 'passport_file' => $passportFilePath ?? null,
                 'passport_file_uploaded' => $passportFileUploaded ?? $document?->passport_file_uploaded,
-
+                'passport_verified' => $request->hasFile('passport_file') ? 0 : ($document?->passport_verified ?? 0),
+                
                 'medical' => $userToUpdate->medical,
                 'medical_issuedby' => $request->issued_by ?? null,
                 'medical_class' => $request->medical_class ?? null,
@@ -810,6 +812,7 @@ class UserController extends Controller
                 'medical_restriction' => $request->medical_detail ?? null,
                 'medical_file' => $medicalFilePath ?? null,
                 'medical_file_uploaded' => $medicalFileUploaded ?? $document?->medical_file_uploaded,
+                'medical_verified' => $request->hasFile('medical_file') ? 0 : ($document?->medical_verified ?? 0),
 
                 'medical_2' => $userToUpdate->medical,
                 'medical_issuedby_2' => $request->issued_by_2 ?? null,
@@ -819,6 +822,7 @@ class UserController extends Controller
                 'medical_restriction_2' => $request->medical_detail_2 ?? null,
                 'medical_file_2' => $medicalFilePath_2 ?? null,
                 'medical_file_uploaded_2' => $medicalFileUploaded_2 ?? $document?->medical_file_uploaded_2,
+                'medical_verified_2' => $request->hasFile('medical_file_2') ? 0 : ($document?->medical_verified_2 ?? 0),
             ]
         );
 
