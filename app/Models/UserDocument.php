@@ -99,9 +99,9 @@ class UserDocument extends Model
             return 'Yellow';
         }
 
-        if ($this->user && $this->user->licence_admin_verification_required == 1 && $this->licence_verified == 0) {
-            return 'Yellow';
-        }
+        // if ($this->user && $this->user->licence_admin_verification_required == 1 && $this->licence_verified == 0) {
+        //     return 'Yellow';
+        // }
 
         return 'Green';
     }
@@ -118,16 +118,25 @@ class UserDocument extends Model
             return 'Yellow';
         }
 
-        if ($this->user && $this->user->licence_2_admin_verification_required == 1 && $this->licence_verified_2 == 0) {
-            return 'Yellow';
-        }
+        // if ($this->user && $this->user->licence_2_admin_verification_required == 1 && $this->licence_verified_2 == 0) {
+        //     return 'Yellow';
+        // }
 
         return 'Green';
     }
 
+    // public function getPassportStatusAttribute()
+    // {
+    //     if ($this->passport_admin_verification_required == 1 && $this->passport_verified == 0) {
+    //         return 'Yellow';
+    //     }
+
+    //     return $this->getExpiryStatus($this->passport_expiry_date);
+    // }
+
     public function getPassportStatusAttribute()
     {
-        if ($this->passport_admin_verification_required == 1 && $this->passport_verified == 0) {
+        if ($this->passport_expiry_date == 0) {
             return 'Yellow';
         }
 
@@ -170,9 +179,9 @@ class UserDocument extends Model
 
     public function isPassportExpiring()
     {
-        if ($this->passport_admin_verification_required == 1 && $this->passport_verified == 0) {
-            return false;
-        }
+        // if ($this->passport_admin_verification_required == 1 && $this->passport_verified == 0) {
+        //     return false;
+        // }
 
         return in_array($this->passport_status, ['Red', 'Yellow']);
     }

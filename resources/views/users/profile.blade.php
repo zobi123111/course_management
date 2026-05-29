@@ -549,7 +549,25 @@
                                     <input type="text" name="licence_2" id="licence_2" value="{{ $document?->licence_2 ?? '' }}" class="form-control" placeholder="Enter EASA Licence Number">
                                     <div class="text-danger error_e" id="licence_error_up"></div>
 
-                                    <label class="form-label mt-3"><strong>Expiry Date <span class="text-danger">*</span></strong></label>
+                                    <label class="form-label mt-3"><strong>Expiry Date <span class="text-danger">*</span></strong>
+                                        @if($document?->licence2_status == 'Red')
+                                            <span class="text-danger">
+                                                <i class="bi bi-x-circle-fill"></i> Expired
+                                            </span>
+                                        @elseif($document?->licence2_status == 'Yellow')
+                                            <span class="text-warning">
+                                                <i class="bi bi-exclamation-triangle-fill"></i> Expiring Soon
+                                            </span>
+                                        @elseif($document?->licence2_status == 'Green')
+                                            <span class="text-success">
+                                                <i class="bi bi-check-circle-fill"></i> Valid
+                                            </span>
+                                        @else
+                                            <span class="text-secondary">
+                                                <i class="bi bi-question-circle-fill"></i> N/A
+                                            </span>
+                                        @endif
+                                    </label>
                                     <input type="date" name="licence_expiry_date_2" id="licence_expiry_date_2" value="{{ $document?->licence_expiry_date_2 ?? '' }}" class="form-control mb-2">
 
                                     <div class="form-check form-switch">

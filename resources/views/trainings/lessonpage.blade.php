@@ -853,182 +853,6 @@
                 </div>
                 @endif
 
-                <!-- <div class="tab-pane fade mt-3 @if(in_array($lessonType, ['deferred', 'custom'])) active show @endif" id="Lesson" role="tabpanel" aria-labelledby="Lesson-tab">
-                    <div class="card">
-                        <div class="card-body">
-                            <div id="lessonAlert" class="alert d-none mb-3" role="alert"></div>
-                            <h5 class="details-card-title d-flex justify-content-between align-items-center mt-3">
-                                Lesson Details {{$trainingEvent?->orgUnit?->Ousetting?->timezone}}
-                                @php
-                                    $lesson = in_array($lessonType, ['custom', 'deferred'])
-                                    ? $deflessondetails
-                                    : $lessondetails;
-
-                                    $trainingEvent = in_array($lessonType, ['custom', 'deferred'])
-                                    ? $lesson?->event
-                                    : $lesson?->trainingEvent;
-                                @endphp
-                                
-                                @php $user = auth()->user(); @endphp
-
-                                @if($user && ($user->is_owner || $user->is_admin || $user->id == $lesson->instructor_id))
-                                    <button type="button" class="btn btn-sm btn-primary" id="editBtn">
-                                        Edit
-                                    </button>
-                                @endif
-                            </h5>
-
-                            <h5 class="details-card-title d-flex justify-content-between align-items-center mb-3">
-                                Operation :  {{ \Carbon\Carbon::parse($lesson->lesson_date)->format('Y-m-d') }}
-                            </h5>
-
-                            <form id="lessonForm" action="{{ route('event.lesson.update') }}" method="POST">
-                                @csrf
-                                <input type="hidden" name="id" value="{{ $lesson->id }}">
-
-                                <div class="row g-3">
-
-                                    @if($lessonType == 'custom')
-                                    <input type="hidden" name="lessontype" value="custom">
-                                    @elseif ($lessonType == 'deferred')
-                                    <input type="hidden" name="lessontype" value="deferred">
-                                    @endif
-
-                                    <div class="col-md-6">
-                                        <label class="form-label">Instructor</label>
-                                        <select class="form-select editable" name="instructor_id" id="instructorSelect" disabled>
-                                            @foreach($instructors as $inst)
-                                            <option value="{{ $inst->id }}"
-                                                data-licence="{{ $inst->licence ?? $inst->documents->licence ?? '' }}"
-                                                {{ $lesson->instructor_id == $inst->id ? 'selected' : '' }}>
-                                                {{ $inst->fname }} {{ $inst->lname }}
-                                            </option>
-                                            @endforeach
-                                        </select>
-                                    </div>
-
-                                    <div class="col-md-6">
-                                        <label class="form-label">Licence No</label>
-                                        <input type="text"
-                                            id="licenceField"
-                                            class="form-control always-disabled"
-                                            value="{{ $lesson->instructor->licence 
-                                            ?? $lesson->instructor->documents->licence 
-                                            ?? $lesson->instructor->documents->licence_2 
-                                            ?? '' }}"
-                                            disabled>
-                                    </div>
-
-                                    <div class="col-md-6">
-                                        <label class="form-label">Resource</label>
-                                        <select class="form-select editable" name="resource_id" id="resourceSelect" disabled>
-                                            @foreach($resources as $resource)
-                                            <option value="{{ $resource->id }}"
-                                                data-name="{{ $resource->name }}"
-                                                {{ $lesson->resource_id == $resource->id ? 'selected' : '' }}>
-                                                {{ $resource->code ?? $resource->name }}
-                                            </option>
-                                            @endforeach
-                                        </select>
-                                    </div>
-
-                                    <div class="col-md-12" id="timeFieldsWrapper">
-
-                                        <div class="row">
-
-                                            <div class="col-md-3">
-                                                <label class="form-label">Off Blocks</label>
-                                                <input type="time"
-                                                    class="form-control editable"
-                                                    name="start_time"
-                                                    value="{{ $lesson->start_time ? \Carbon\Carbon::parse($lesson->start_time)->format('H:i') : '' }}"
-                                                    disabled>
-                                            </div>
-
-                                            <div class="col-md-3">
-                                                <label class="form-label">On Blocks</label>
-                                                <input type="time"
-                                                    class="form-control editable"
-                                                    name="end_time"
-                                                    value="{{ $lesson->end_time ? \Carbon\Carbon::parse($lesson->end_time)->format('H:i') : '' }}"
-                                                    disabled>
-                                            </div>
-
-                                            <div class="col-md-3">
-                                                <label class="form-label">Takeoff</label>
-                                                <input type="time"
-                                                    class="form-control editable"
-                                                    name="takeoff_time"
-                                                    value="{{ $lesson->takeoff_time ? \Carbon\Carbon::parse($lesson->takeoff_time)->format('H:i') : '' }}"
-                                                    disabled>
-                                            </div>
-
-                                            <div class="col-md-3">
-                                                <label class="form-label">Landing</label>
-                                                <input type="time"
-                                                    class="form-control editable"
-                                                    name="landing_time"
-                                                    value="{{ $lesson->landing_time ? \Carbon\Carbon::parse($lesson->landing_time)->format('H:i') : '' }}"
-                                                    disabled>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    @if($trainingEvent?->orgUnit?->Ousetting?->enable_tacho_fields)
-
-                                    <div class="col-md-6">
-                                        <label class="form-label">Tacho Start</label>
-                                        <input type="text"
-                                            class="form-control editable"
-                                            name="tacho_start_time"
-                                            value="{{ str_pad(number_format($lesson->tacho_start_time, 2, '.', ''), 7, '0', STR_PAD_LEFT) }}"
-                                            pattern="^\d{4}\.\d{2}$"
-                                            inputmode="decimal"
-                                            placeholder="0000.00"
-                                            disabled>
-                                    </div>
-
-                                    <div class="col-md-6">
-                                        <label class="form-label">Tacho Stop</label>
-                                        <input type="text"
-                                            class="form-control editable"
-                                            name="tacho_stop_time"
-                                            value="{{ str_pad(number_format($lesson->tacho_stop_time, 2, '.', ''), 7, '0', STR_PAD_LEFT) }}"
-                                            pattern="^\d{4}\.\d{2}$"
-                                            inputmode="decimal"
-                                            placeholder="0000.00"
-                                            disabled>
-                                    </div>
-
-                                    @endif
-                                    <div class="col-md-6">
-                                        <label class="form-label">Departure Airfield</label>
-                                        <input type="text"
-                                            class="form-control editable"
-                                            name="departure_airfield"
-                                            value="{{ $lesson->departure_airfield }}"
-                                            disabled>
-                                    </div>
-
-                                    <div class="col-md-6">
-                                        <label class="form-label">Destination Airfield</label>
-                                        <input type="text"
-                                            class="form-control editable"
-                                            name="destination_airfield"
-                                            value="{{ $lesson->destination_airfield }}"
-                                            disabled>
-                                    </div>
-
-                                </div>
-
-                                <div class="mt-4 d-none" id="actionButtons">
-                                    <button type="button" class="btn btn-secondary" id="cancelBtn">Cancel</button>
-                                    <button type="submit" class="btn btn-sm btn-primary">Save</button>
-                                </div>
-                            </form>
-                        </div>
-                    </div>
-                </div> -->
                 <div class="tab-pane fade mt-3 @if(in_array($lessonType, ['deferred', 'custom'])) active show @endif" id="Lesson" role="tabpanel" aria-labelledby="Lesson-tab">
                     <div class="card">
                         <div class="card-body">
@@ -1180,6 +1004,15 @@
                                             disabled>
                                     </div>
 
+                                    <div class="col-md-3 d-none" id="homeStudyTimeField">
+                                        <label class="form-label">Home Study Time</label>
+                                        <input type="text"
+                                            class="form-control editable"
+                                            name="hours_credited"
+                                            value="{{ $lesson->hours_credited }}"
+                                            disabled>
+                                    </div>
+
                                     @if($trainingEvent?->orgUnit?->Ousetting?->enable_tacho_fields)
                                         <div class="col-md-3">
                                             <label class="form-label">Tacho Start</label>
@@ -1251,111 +1084,6 @@
                         </div>
                     </div>
 
-                    <!-- @if ($lesson->customTime->count())
-                        <div class="card">
-                            <div class="card-body">
-                                    <h5 class="details-card-title d-flex justify-content-between align-items-center mt-3 mb-3">
-                                        Credited Time
-                                    </h5>
-
-                                {{-- Existing Custom Times --}}
-                                @if($lesson->CreditedTime && $lesson->CreditedTime->count())
-                                    <div class="mt-4">
-                                        <h5>Existing Custom Times</h5>
-
-                                        @foreach($lesson->CreditedTime as $ct)
-                                            @php
-                                                $custom = $lesson->customTime->firstWhere('id', $ct->custom_time_id);
-                                                $allotted = $custom->given_hours ?? $custom->hours ?? '0.00';
-                                            @endphp
-                                        
-
-                                            <div class="border p-3 rounded mb-2 custom-time-row" data-id="{{ $ct->id }}">
-                                                <div class="row g-3 align-items-end">
-
-                                                    <div class="col-md-4">
-                                                        <label class="form-label">Custom Name</label>
-                                                        <input type="text" class="form-control custom-name" value="{{ $ct->name }} - (Allotted: {{ number_format((float)$allotted, 2) }})" disabled>
-                                                    </div>
-
-                                                    <div class="col-md-4">
-                                                        <label class="form-label">Credited</label>
-                                                        <input type="text" class="form-control credited" name="hours" data-original="{{ $ct->hours }}" data-allotted="{{ $allotted }}" value="{{ $ct->hours }}" disabled>
-                                                    </div>
-
-                                                  
-                                                    <div class="col-md-4">
-                                                        <div class="d-flex gap-2">
-                                                            <button class="btn btn-sm btn-primary editExistingBtn">Edit</button>
-                                                            <button class="btn btn-sm btn-danger deleteExistingBtn">Delete</button>
-                                                            <button class="btn btn-sm btn-success d-none saveExistingBtn">Save</button>
-                                                            <button class="btn btn-sm btn-secondary d-none cancelExistingBtn">Cancel</button>
-                                                        </div>
-                                                    </div>
-
-                                                </div>
-                                            </div>
-                                        @endforeach
-                                    </div>
-                                @endif
-
-                                @php
-                                    $customCount = $lesson->customTime->count() ?? 0;
-                                    $creditedCount = $lesson->CreditedTime->count() ?? 0;
-                                @endphp
-
-                                
-
-                                @if($creditedCount < $customCount)
-                                    <button class="btn btn-primary" id="showAddFormBtn">Add Custom Time</button>
-                                @endif
-
-                                {{-- Add Custom Time Form --}}
-                                <form id="customtimeForm" action="{{ route('lesson.custometime.update') }}" method="POST" class="mt-4 d-none">
-                                    @csrf
-                                    <input type="hidden" name="id" value="{{ $lesson->id }}">
-                                    <input type="hidden" name="training_event_id" value="{{ $lesson->training_event_id }}">
-
-                                    <div id="customTimeContainer"></div>
-
-                                    <button type="button" class="btn btn-success btn-sm mt-2" id="addNewCustomTimeRow">+ ADD ROW</button>
-
-                                    <div class="mt-4 d-flex justify-content-end gap-2">
-                                        <button type="button" class="btn btn-secondary" id="cancelFormBtn">Cancel</button>
-                                        <button type="submit" class="btn btn-primary btn-sm">Save</button>
-                                    </div>
-                                </form>
-
-                                <template id="customTimeTemplate">
-                                    <div class="row g-3 border p-3 rounded mb-2 custom-time-add-row">
-
-                                        <div class="col-md-4">
-                                            <label class="form-label">Custom Time Name</label>
-                                            <select class="form-select customTimeSelect" name="custom_time_id[]">
-                                                <option value="">Select Custom Time</option>
-                                                @foreach($lesson->customTime as $ct)
-                                                    @if(!$lesson->CreditedTime->contains('custom_time_id', $ct->id))
-                                                        <option value="{{ $ct->id }}" data-hours="{{ $ct->hours }}">{{ $ct->name }} - (Allotted: {{ number_format((float)($ct->given_hours ?? $ct->hours), 2) }})</option>
-                                                    @endif
-                                                @endforeach
-                                            </select>
-                                        </div>
-
-                                        <div class="col-md-4">
-                                            <label class="form-label">Credited Custom Time</label>
-                                            <input type="text" class="form-control" name="custom_time_credited[]">
-                                        </div>
-
-                                        <div class="col-md-4 d-flex align-items-end">
-                                            <button type="button" class="btn btn-danger btn-sm removeRowBtn">Remove</button>
-                                        </div>
-
-                                    </div>
-                                </template>
-
-                            </div>
-                        </div>
-                    @endif -->
                     @if ($lesson->customTime->count())
                         <div class="card">
                             <div class="card-body">
@@ -4575,48 +4303,139 @@
         //         timeFields.style.display = 'block';
         //     }
         // }
+        // function toggleFields() {
+        //     if (!resourceSelect) return;
+
+        //     const resourceName = resourceSelect.options[resourceSelect.selectedIndex].text.trim();
+        //     const hideList = ['Homestudy', 'Home Study', 'Classroom'];
+
+        //     const isGroundschool = hideList.includes(resourceName);
+
+        //     // Fields
+        //     const opField = document.getElementById("operationSelect")?.closest('.col-md-3');
+        //     const depField = document.querySelector('input[name="departure_airfield"]')?.closest('.col-md-3');
+        //     const destField = document.querySelector('input[name="destination_airfield"]')?.closest('.col-md-3');
+        //     const takeoffField = document.querySelector('input[name="takeoff_time"]')?.closest('.col-md-3');
+        //     const landingField = document.querySelector('input[name="landing_time"]')?.closest('.col-md-3');
+
+        //     // Rename Off/On Blocks
+        //     const startLabel = document.querySelector('.start-label');
+        //     const endLabel = document.querySelector('.end-label');
+        //     const addSectorBtn = document.querySelector('#addSectorBtn');
+
+        //     if (isGroundschool) {
+
+        //         if (opField) opField.style.display = "none";
+        //         if (depField) depField.style.display = "none";
+        //         if (destField) destField.style.display = "none";
+        //         if (takeoffField) takeoffField.style.display = "none";
+        //         if (landingField) landingField.style.display = "none";
+
+        //         if (startLabel) startLabel.textContent = "Start";
+        //         if (endLabel) endLabel.textContent = "Finish";
+        //         if (addSectorBtn) addSectorBtn.textContent = "Add Lesson";
+
+        //     } else {
+        //         if (opField) opField.style.display = "";
+        //         if (depField) depField.style.display = "";
+        //         if (destField) destField.style.display = "";
+        //         if (takeoffField) takeoffField.style.display = "";
+        //         if (landingField) landingField.style.display = "";
+        //         if (startLabel) startLabel.textContent = "Off Blocks";
+        //         if (endLabel) endLabel.textContent = "On Blocks";
+        //         if (addSectorBtn) addSectorBtn.textContent = "Add Sector";
+                
+        //     }
+        // }
+
         function toggleFields() {
             if (!resourceSelect) return;
 
             const resourceName = resourceSelect.options[resourceSelect.selectedIndex].text.trim();
-            const hideList = ['Homestudy', 'Home Study', 'Classroom'];
 
-            const isGroundschool = hideList.includes(resourceName);
+            const homeStudyList = ['Homestudy', 'Home Study'];
+            const classroomList = ['Classroom'];
+
+            const isHomeStudy = homeStudyList.includes(resourceName);
+            const isClassroom = classroomList.includes(resourceName);
 
             // Fields
             const opField = document.getElementById("operationSelect")?.closest('.col-md-3');
             const depField = document.querySelector('input[name="departure_airfield"]')?.closest('.col-md-3');
             const destField = document.querySelector('input[name="destination_airfield"]')?.closest('.col-md-3');
+
+            const startField = document.querySelector('input[name="start_time"]')?.closest('.col-md-3');
+            const endField = document.querySelector('input[name="end_time"]')?.closest('.col-md-3');
+
             const takeoffField = document.querySelector('input[name="takeoff_time"]')?.closest('.col-md-3');
             const landingField = document.querySelector('input[name="landing_time"]')?.closest('.col-md-3');
 
-            // Rename Off/On Blocks
+            const homeStudyField = document.getElementById('homeStudyTimeField');
+
+            // Labels
             const startLabel = document.querySelector('.start-label');
             const endLabel = document.querySelector('.end-label');
+
             const addSectorBtn = document.querySelector('#addSectorBtn');
 
-            if (isGroundschool) {
+            // HOME STUDY
+            if (isHomeStudy) {
 
                 if (opField) opField.style.display = "none";
                 if (depField) depField.style.display = "none";
                 if (destField) destField.style.display = "none";
+
+                if (startField) startField.style.display = "none";
+                if (endField) endField.style.display = "none";
+
                 if (takeoffField) takeoffField.style.display = "none";
                 if (landingField) landingField.style.display = "none";
 
+                if (homeStudyField) homeStudyField.classList.remove('d-none');
+
+                if (addSectorBtn) addSectorBtn.textContent = "Add Lesson";
+            }
+
+            // CLASSROOM
+            else if (isClassroom) {
+
+                if (opField) opField.style.display = "none";
+                if (depField) depField.style.display = "none";
+                if (destField) destField.style.display = "none";
+
+                if (takeoffField) takeoffField.style.display = "none";
+                if (landingField) landingField.style.display = "none";
+
+                if (startField) startField.style.display = "";
+                if (endField) endField.style.display = "";
+
+                if (homeStudyField) homeStudyField.classList.add('d-none');
+
                 if (startLabel) startLabel.textContent = "Start";
                 if (endLabel) endLabel.textContent = "Finish";
-                if (addSectorBtn) addSectorBtn.textContent = "Add Lesson";
 
-            } else {
+                if (addSectorBtn) addSectorBtn.textContent = "Add Lesson";
+            }
+
+            // NORMAL FLIGHT
+            else {
+
                 if (opField) opField.style.display = "";
                 if (depField) depField.style.display = "";
                 if (destField) destField.style.display = "";
+
+                if (startField) startField.style.display = "";
+                if (endField) endField.style.display = "";
+
                 if (takeoffField) takeoffField.style.display = "";
                 if (landingField) landingField.style.display = "";
+
+                if (homeStudyField) homeStudyField.classList.add('d-none');
+
                 if (startLabel) startLabel.textContent = "Off Blocks";
                 if (endLabel) endLabel.textContent = "On Blocks";
+
                 if (addSectorBtn) addSectorBtn.textContent = "Add Sector";
-                
             }
         }
 
