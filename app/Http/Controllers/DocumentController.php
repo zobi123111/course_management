@@ -485,7 +485,7 @@ class DocumentController extends Controller
                 $document->update(['acknowledge_by' => json_encode($acknowledgedUsers)]);
             }
     
-            return response()->json(['success' => 'Document acknowledged successfully.']);
+            return response()->json(['success' => 'Document acknowledged successfully.']); 
         }
     
         return response()->json(['error' => 'Something went wrong, please try again later.'], 500);
