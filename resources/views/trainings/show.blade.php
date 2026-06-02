@@ -1032,12 +1032,16 @@
                                             <i class="text-primary fas fa-clock"></i>
                                             {{ $isGroundschool ? 'Start Time:' : 'Off blocks:' }}
                                         </strong><br>
-                                        @if(!empty($lesson->start_time) && $lesson->start_time !== '00:00:00')
-                                        {{ date('H:i', strtotime($lesson->start_time)) }}
-                                        @elseif($lesson->start_time === '00:00:00')
-                                        {{ $lesson->start_time }}
+                                        @php
+                                            $startTime = $isGroundschool ? $lesson->start_time : $lesson->takeoff_time;
+                                        @endphp
+
+                                        @if(!empty($startTime) && $startTime !== '00:00:00')
+                                            {{ date('H:i', strtotime($startTime)) }}
+                                        @elseif($startTime === '00:00:00')
+                                            {{ $startTime }}
                                         @else
-                                        -
+                                            -
                                         @endif
                                     </div>
 
@@ -1054,12 +1058,16 @@
                                             <i class="text-primary fas fa-clock"></i>
                                             {{ $isGroundschool ? 'End Time:' : 'On blocks:' }}
                                         </strong><br>
-                                        @if(!empty($lesson->end_time) && $lesson->end_time !== '00:00:00')
-                                        {{ date('H:i', strtotime($lesson->end_time)) }}
-                                        @elseif($lesson->end_time === '00:00:00')
-                                        {{ $lesson->end_time }}
+                                        @php
+                                            $endTime = $isGroundschool ? $lesson->end_time : $lesson->landing_time;
+                                        @endphp
+
+                                        @if(!empty($endTime) && $endTime !== '00:00:00')
+                                            {{ date('H:i', strtotime($endTime)) }}
+                                        @elseif($endTime === '00:00:00')
+                                            {{ $endTime }}
                                         @else
-                                        -
+                                            -
                                         @endif
                                     </div>
 
@@ -1085,29 +1093,73 @@
                                     @endif
 
                                     @php
-                                        $credited = $lesson->hours_credited ?? '00:00';
 
-                                        list($ch, $cm) = explode(':', $credited);
-                                        $totalMinutes = ($ch * 60) + $cm;
+                                        if ($isGroundschool) {
 
-                                        foreach($lesson->sectors as $sector) {
-                                            if(!empty($sector->start_time) && !empty($sector->end_time) && 
-                                            $sector->start_time !== '00:00:00' && $sector->end_time !== '00:00:00') 
-                                            {
-                                                $start = strtotime($sector->start_time);
-                                                $end   = strtotime($sector->end_time);
+                                            $credited = $lesson->hours_credited ?? '00:00';
 
-                                                if($end > $start) {
-                                                    $diffMin = ($end - $start) / 60; // difference in minutes
-                                                    $totalMinutes += $diffMin;
+                                            list($ch, $cm) = explode(':', $credited);
+                                            $totalMinutes = ($ch * 60) + $cm;
+
+                                            foreach ($lesson->sectors as $sector) {
+                                                if (
+                                                    !empty($sector->start_time) &&
+                                                    !empty($sector->end_time) &&
+                                                    $sector->start_time !== '00:00:00' &&
+                                                    $sector->end_time !== '00:00:00'
+                                                ) {
+                                                    $start = strtotime($sector->start_time);
+                                                    $end   = strtotime($sector->end_time);
+
+                                                    if ($end > $start) {
+                                                        $totalMinutes += ($end - $start) / 60;
+                                                    }
+                                                }
+                                            }
+
+                                        } else {
+
+                                            $totalMinutes = 0;
+
+                                            // Main lesson block time
+                                            if (
+                                                !empty($lesson->takeoff_time) &&
+                                                !empty($lesson->landing_time) &&
+                                                $lesson->takeoff_time !== '00:00:00' &&
+                                                $lesson->landing_time !== '00:00:00'
+                                            ) {
+                                                $takeoff = strtotime($lesson->takeoff_time);
+                                                $landing = strtotime($lesson->landing_time);
+
+                                                if ($landing > $takeoff) {
+                                                    $totalMinutes += ($landing - $takeoff) / 60;
+                                                }
+                                            }
+
+                                            // Sector block times
+                                            foreach ($lesson->sectors as $sector) {
+
+                                                if (
+                                                    !empty($sector->takeoff_time) &&
+                                                    !empty($sector->landing_time) &&
+                                                    $sector->takeoff_time !== '00:00:00' &&
+                                                    $sector->landing_time !== '00:00:00'
+                                                ) {
+                                                    $takeoff = strtotime($sector->takeoff_time);
+                                                    $landing = strtotime($sector->landing_time);
+
+                                                    if ($landing > $takeoff) {
+                                                        $totalMinutes += ($landing - $takeoff) / 60;
+                                                    }
                                                 }
                                             }
                                         }
 
-                                        $finalHours = floor($totalMinutes / 60);
+                                        $finalHours   = floor($totalMinutes / 60);
                                         $finalMinutes = $totalMinutes % 60;
-                                        $finalTime = sprintf('%02d:%02d', $finalHours, $finalMinutes);
-                                    @endphp
+                                        $finalTime    = sprintf('%02d:%02d', $finalHours, $finalMinutes);
+
+                                        @endphp
                                     <div class="col-md-2 mt-3">
                                         <strong><i class="text-primary fas fa-hourglass-half"></i> Block Hours:</strong><br>
                                         <!-- {{ $lesson->hours_credited ?? '00:00' }} -->
@@ -2083,8 +2135,13 @@
                                     <i class="text-primary fas fa-clock"></i>
                                     {{ $isGroundschool ? 'Start Time:' : 'Off blocks:' }}
                                 </strong><br>
-                                {{ date('H:i', strtotime($def->start_time)) }}
+                                {{
+                                    $isGroundschool
+                                        ? ($def->start_time ? date('H:i', strtotime($def->start_time)) : '-')
+                                        : ($def->takeoff_time ? date('H:i', strtotime($def->takeoff_time)) : '-')
+                                }}
                             </div>
+
                             @if(isset($lessonType) && $lessonType != 'groundschool')
 
                                 <div class="col-md-2 mt-2">
@@ -2098,13 +2155,39 @@
                                     <i class="text-primary fas fa-clock"></i>
                                     {{ $isGroundschool ? 'End Time:' : 'On blocks:' }}
                                 </strong><br>
-                                {{ date('H:i', strtotime($def->end_time)) }}
+                                {{
+                                    $isGroundschool
+                                        ? ($def->end_time ? date('H:i', strtotime($def->end_time)) : '-')
+                                        : ($def->landing_time ? date('H:i', strtotime($def->landing_time)) : '-')
+                                }}
                             </div>
 
+
+                            @php
+                                $lessonType = $def->deftasks?->subddddLesson?->courseLesson?->lesson_type ?? null;
+                                $isGroundschool = ($lessonType === 'groundschool');
+
+                                $start = $isGroundschool ? $def->start_time : $def->takeoff_time;
+                                $end   = $isGroundschool ? $def->end_time : $def->landing_time;
+
+                                $duration = '00:00';
+
+                                if ($start && $end) {
+                                    $startTime = \Carbon\Carbon::parse($start);
+                                    $endTime   = \Carbon\Carbon::parse($end);
+
+                                    $minutes = $startTime->diffInMinutes($endTime);
+
+                                    $hours = floor($minutes / 60);
+                                    $mins  = $minutes % 60;
+
+                                    $duration = sprintf('%02d:%02d', $hours, $mins);
+                                }
+                            @endphp
                        
                             <div class="col-md-2 mt-2">
                                 <strong><i class="text-primary fas fa-hourglass-half"></i> Block Hours:</strong><br>
-                                {{ $def->defLesson->hours_credited ?? '00:00' }}
+                                {{ $duration }}
                             </div>
 
                             @if(isset($lessonType) && $lessonType != 'groundschool')
@@ -2885,6 +2968,18 @@
                                             foreach ($deferredLessons as $defLesson) {
                                                 $takeoff = strtotime($defLesson->takeoff_time);
                                                 $landing = strtotime($defLesson->landing_time);
+
+                                                if ($takeoff && $landing && $landing > $takeoff) {
+                                                    $deferredFlightTime += ($landing - $takeoff);
+                                                }
+                                            }
+                                        }
+
+
+                                        if (isset($customLessons) && $customLessons->isNotEmpty()) {
+                                            foreach ($customLessons as $customLesson) {
+                                                $takeoff = strtotime($customLesson->takeoff_time);
+                                                $landing = strtotime($customLesson->landing_time);
 
                                                 if ($takeoff && $landing && $landing > $takeoff) {
                                                     $deferredFlightTime += ($landing - $takeoff);
