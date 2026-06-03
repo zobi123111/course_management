@@ -1083,7 +1083,7 @@
                             </form>
                         </div>
                     </div>
-
+                    
                     @if ($lesson->customTime->count())
                         <div class="card">
                             <div class="card-body">
@@ -1147,10 +1147,11 @@
 
                                 {{-- ================= ADD FORM ================= --}}
                                 <form id="customtimeForm" action="{{ route('lesson.custometime.update') }}" method="POST" class="mt-4" >
-
+                                  <?php $lesson_type = request()->get('lesson_type');  ?>
                                     @csrf
                                     <input type="hidden" name="id" value="{{ $lesson->id }}">
-                                    <input type="hidden" name="training_event_id" value="{{ $lesson->training_event_id }}">
+                                    <input type="hidden" name="training_event_id" value="{{ $lesson->training_event_id ?? $lesson->event_id  }}">
+                                    <input type="hidden" name="lesson_type" value="{{ $lesson_type }}">
 
                                     @foreach($remainingCustomTimes as $ct)
                                         <div class="row g-3 border p-3 rounded mb-2 custom-time-add-row">
@@ -1386,7 +1387,7 @@
                                                                                 <span class="custom-radio competent">Competent</span>
                                                                             </label>
                                                                         </td>
-
+ 
                                                                     </tr>
 
                                                                     @elseif($lesson->grade_type == 'percentage')

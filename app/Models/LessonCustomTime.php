@@ -16,6 +16,7 @@ class LessonCustomTime extends Model
         'custom_time_id',
         'name',
         'hours',
+        'type'
     ];
 
     public function lesson()
@@ -32,4 +33,16 @@ class LessonCustomTime extends Model
     {
         return $this->belongsTo(Courses::class);
     }
+
+    public function def_lesson()
+    {
+        return $this->belongsTo(DefLesson::class, 'lesson_id', 'id');
+    }
+
+    public function custome_timeCredeted()
+    {
+        return  $this->hasMany(LessonTimeCredited::class, 'custom_time_id', 'id');
+    }
+
+
 }

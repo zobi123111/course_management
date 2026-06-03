@@ -1216,11 +1216,12 @@
                                     </div>
                                     @endif -->                                
 
-                                    @php
+                                    <?php
                                         $singleCustomTime = $lesson->lesson->customTime ?? null;
                                         $multipleCustomTimes = $lesson->lesson->lessoncustomTime ?? collect();
                                         $creditedTimes = $lesson->CreditedTime ?? collect();
-                                    @endphp
+                                       
+                                    ?>
 
                                     @if($singleCustomTime)
                                         <!-- <div class="col-md-3 mt-2">
@@ -1858,7 +1859,46 @@
                                                 @endif
                                             </div>
                                         @endif   
-                                    @endif   
+                                    @endif 
+                                    
+                                    @if($def->customTime->isNotEmpty())
+                                          <div class="col-md-12 mt-3">
+                                            <strong><i class="text-primary fas fa-clock"></i> Course Tracking :</strong>
+
+                                            <div class="table-responsive mt-2">
+                                                <table class="table table-bordered table-sm" style="border-color: #000 !important;">
+                                                    <thead class="table-light" style="border-color: #000 !important;">
+                                                        <tr>
+                                                            <th class="text-center">Custom Time</th>
+                                                            <th class="text-center">Allotted Time</th>
+                                                            <th class="text-center">Credited Time</th>
+                                                            <th class="text-center">Remaining Time</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        @foreach($def->customTime as $ct)
+                                                            @php
+                                                                $allotted = (float) ($ct->given_hours ?? $ct->hours ?? 0);
+
+                                                                // credited hours ONLY for this custom_time
+                                                                $creditedHours = (float) $ct->custome_timeCredeted->sum('hours');
+
+                                                                $remaining = max($allotted - $creditedHours, 0);
+                                                                $remainingFormatted = number_format($remaining, 2);
+                                                            @endphp
+
+                                                            <tr class="text-center">
+                                                                <td>{{ $ct->name }}</td>
+                                                                <td>{{ number_format($allotted, 2) }}</td>
+                                                                <td>{{ number_format($creditedHours, 2) }}</td>
+                                                                <td>{{ $remainingFormatted }}</td>
+                                                            </tr>
+                                                        @endforeach
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    @endif
 
                                     @if($def->deferredSectors->isNotEmpty())
                                         <h5 class="details-card-title d-flex justify-content-between align-items-center mt-3"> <strong> Additional Sectors </strong> </h5>
@@ -2189,6 +2229,44 @@
                                 <strong><i class="text-primary fas fa-hourglass-half"></i> Block Hours:</strong><br>
                                 {{ $duration }}
                             </div>
+                                   @if($def->customTime->isNotEmpty())
+                                          <div class="col-md-12 mt-3">
+                                            <strong><i class="text-primary fas fa-clock"></i> Course Tracking :</strong>
+
+                                            <div class="table-responsive mt-2">
+                                                <table class="table table-bordered table-sm" style="border-color: #000 !important;">
+                                                    <thead class="table-light" style="border-color: #000 !important;">
+                                                        <tr>
+                                                            <th class="text-center">Custom Time</th>
+                                                            <th class="text-center">Allotted Time</th>
+                                                            <th class="text-center">Credited Time</th>
+                                                            <th class="text-center">Remaining Time</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        @foreach($def->customTime as $ct)
+                                                            @php
+                                                                $allotted = (float) ($ct->given_hours ?? $ct->hours ?? 0);
+
+                                                                // credited hours ONLY for this custom_time
+                                                                $creditedHours = (float) $ct->custome_timeCredeted->sum('hours');
+
+                                                                $remaining = max($allotted - $creditedHours, 0);
+                                                                $remainingFormatted = number_format($remaining, 2);
+                                                            @endphp
+
+                                                            <tr class="text-center">
+                                                                <td>{{ $ct->name }}</td>
+                                                                <td>{{ number_format($allotted, 2) }}</td>
+                                                                <td>{{ number_format($creditedHours, 2) }}</td>
+                                                                <td>{{ $remainingFormatted }}</td>
+                                                            </tr>
+                                                        @endforeach
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    @endif
 
                             @if(isset($lessonType) && $lessonType != 'groundschool')
                                 @if($def->operation != 0)
@@ -3244,6 +3322,25 @@
                                             </div>
 
                                             <div class="mb-2">
+                                                <label class="form-label">Custom Time Type</label>
+                                                <div>
+                                                    @if ($course_prerequisites->customTimes->count())
+                                                        @foreach ($course_prerequisites->customTimes as $customTime)
+                                                            <div class="form-check form-check-inline">
+                                                                <input class="form-check-input" type="checkbox" name="custom_time_type[]"  value="{{ $customTime->id }}">
+                                                                <label class="form-check-label" for="custom_time_{{ $customTime->id }}">
+                                                                    {{ $customTime->name }} ({{ $customTime->hours }} hrs)
+                                                                </label>
+                                                            </div>
+                                                        @endforeach
+                                                    @else
+                                                        <p class="text-muted">No custom time types configured for this course.</p>
+                                                    @endif
+                                                </div>
+                                            
+                                            </div>
+
+                                            <div class="mb-2">
                                                 <label class="form-label">Instructor <span class="text-danger">*</span></label>
                                                 <select class="form-select" name="instructor_id" id="instructor">
                                                     <option value="">Select Instructor</option>
@@ -3438,6 +3535,25 @@
                                                 <input type="text" name="destination_airfield" class="form-control" maxlength="4" id="edit_destination_airfield">
                                                 <div id="destination_airfield_uperror" class="text-danger error_e"></div>
                                             </div>
+                                            <div class="mb-2">
+                                                <label class="form-label">Custom Time Type</label>
+                                                <div>
+                                                    @if ($course_prerequisites->customTimes->count())
+                                                        @foreach ($course_prerequisites->customTimes as $customTime)
+                                                            <div class="form-check form-check-inline">
+                                                                <input class="form-check-input" type="checkbox" name="edit_custom_time_type[]" id="custom_time_{{ $customTime->id }}" value="{{ $customTime->id }}">
+                                                                <label class="form-check-label" for="custom_time_{{ $customTime->id }}">
+                                                                    {{ $customTime->name }} ({{ $customTime->hours }} hrs)
+                                                                </label>
+                                                            </div>
+                                                        @endforeach
+                                                    @else
+                                                        <p class="text-muted">No custom time types configured for this course.</p>
+                                                    @endif
+                                                </div>
+                                            
+                                            </div>
+
 
                                             <div class="mb-2">
                                                 <label class="form-label">Instructor <span class="text-danger">*</span></label>
@@ -4973,8 +5089,8 @@
                         }
                         console.log(response.deferredLessons[0].operation);
                         $('#deferredLessons_id').val(response.deferredLessons[0].id);
-
-                        if (lesson_type === "custom") {
+                         console.log(lesson_type)
+                        if (lesson_type === "custom") { 
                             $("#edit_DeferredLessonModal .modal-title").text("Edit Custom Lesson");
                         } else {
                             $("#edit_DeferredLessonModal .modal-title").text("Edit Deferred Lesson");
@@ -5012,6 +5128,10 @@
                             } else {
                                 $(".course-dropdown .dropdown-label").text("Select Courses");
                             }
+                          
+                             $.each(response.deferredLessons[0].customtime, function(index, value) {
+                                    $('input[name="edit_custom_time_type[]"][value="' + value.custom_time_id + '"]').prop('checked', true);
+                              });
 
                         } else {
                             $('.taskContainer').empty();
@@ -5025,6 +5145,10 @@
                                     </div>
                                 `;
                                 $('.taskContainer').append(append_task);
+                            });
+                            console.log(response.deferredLessons[0]);
+                            $.each(response.deferredLessons[0].customtime, function(index, value) {
+                                    $('input[name="edit_custom_time_type[]"][value="' + value.custom_time_id + '"]').prop('checked', true);
                             });
                         }
                         $('#edit_DeferredLessonModal').modal('show');
