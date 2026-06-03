@@ -3121,6 +3121,65 @@
                                             }
                                         }
 
+                                        // Deferred Lessons
+                                        if ($deferredLessons && $deferredLessons->isNotEmpty()) {
+
+                                            foreach ($deferredLessons as $lesson) {
+
+                                                foreach ($lesson->customTime as $ct) {
+
+                                                    $name = $ct->name;
+
+                                                    $allottedSeconds = strtotime("1970-01-01 {$ct->hours}") - strtotime("1970-01-01 00:00:00");
+
+                                                    $totals['custom'][$name]['allotted'] =
+                                                        ($totals['custom'][$name]['allotted'] ?? 0) + $allottedSeconds;
+
+                                                    $totals['custom'][$name]['credited'] =
+                                                        $totals['custom'][$name]['credited'] ?? 0;
+                                                }
+
+                                                foreach ($lesson->CreditedTime as $creditRow) {
+
+                                                    $name = $creditRow->name;
+
+                                                    $seconds = strtotime("1970-01-01 {$creditRow->hours}") - strtotime("1970-01-01 00:00:00");
+
+                                                    $totals['custom'][$name]['credited'] =
+                                                        ($totals['custom'][$name]['credited'] ?? 0) + $seconds;
+                                                }
+                                            }
+                                        }
+
+                                        // Custom Lessons
+                                        if ($customLessons && $customLessons->isNotEmpty()) {
+
+                                            foreach ($customLessons as $lesson) {
+
+                                                foreach ($lesson->customTime as $ct) {
+
+                                                    $name = $ct->name;
+
+                                                    $allottedSeconds = strtotime("1970-01-01 {$ct->hours}") - strtotime("1970-01-01 00:00:00");
+
+                                                    $totals['custom'][$name]['allotted'] =
+                                                        ($totals['custom'][$name]['allotted'] ?? 0) + $allottedSeconds;
+
+                                                    $totals['custom'][$name]['credited'] =
+                                                        $totals['custom'][$name]['credited'] ?? 0;
+                                                }
+
+                                                foreach ($lesson->CreditedTime as $creditRow) {
+
+                                                    $name = $creditRow->name;
+
+                                                    $seconds = strtotime("1970-01-01 {$creditRow->hours}") - strtotime("1970-01-01 00:00:00");
+
+                                                    $totals['custom'][$name]['credited'] =
+                                                        ($totals['custom'][$name]['credited'] ?? 0) + $seconds;
+                                                }
+                                            }
+                                        }
                                         
                                     ?>
 
