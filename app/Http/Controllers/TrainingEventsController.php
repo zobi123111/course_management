@@ -1275,13 +1275,14 @@ class TrainingEventsController extends Controller
 
         $deferredTaskIds = collect($getFirstdeftTasks)->pluck('sub_lesson_id')->toArray();
 
-        $deferredLessons = DefLesson::with(['student', 'instructor', 'instructor.documents', 'resource', 'defLesson', 'deftasks.subddddLesson.courseLesson', 'deferredSectors'])
+        $deferredLessons = DefLesson::with(['student', 'instructor', 'instructor.documents', 'resource', 'defLesson', 'deftasks.subddddLesson.courseLesson', 'deferredSectors','customTime.custome_timeCredeted'])
             ->where('event_id', $trainingEvent->id)
             ->where('lesson_type', "deferred")
             ->orderBy('id', 'desc')
             ->get();
+          
 
-        $customLessons = DefLesson::with(['student', 'instructor', 'instructor.documents', 'resource', 'defLesson', 'deftasks.subddddLesson.courseLesson', 'customSectors'])
+        $customLessons = DefLesson::with(['student', 'instructor', 'instructor.documents', 'resource', 'defLesson', 'deftasks.subddddLesson.courseLesson', 'customSectors','customTime.custome_timeCredeted'])
             ->where('event_id', $trainingEvent->id)
             ->where('lesson_type', "custom")
             ->orderBy('id', 'desc')
@@ -1331,7 +1332,8 @@ class TrainingEventsController extends Controller
                 })->with('roles')->get();
         }
       
-        $course = Courses::with('resources')->find($trainingEvent->course_id);
+        $course = Courses::with('resources', 'prerequisites', 'customTimes')->find($trainingEvent->course_id);
+        $course_prerequisites = Courses::with('courseLessons', 'prerequisites', 'customTimes')->findOrFail($trainingEvent->course_id);
         $resources = $course ? $course->resources : collect();
 
         $courses = Courses::orderBy('position')->get();
@@ -1413,7 +1415,7 @@ class TrainingEventsController extends Controller
             ($allDefLessons->isNotEmpty() || $trainingEvent->eventLessons->isNotEmpty());
 
 
-        return view('trainings.show', compact('trainingEvent', 'student', 'overallAssessments', 'eventLessons', 'courselessons', 'taskGrades', 'competencyGrades', 'trainingFeedbacks', 'isGradingCompleted', 'isFullyLocked', 'resources', 'instructors', 'defTasks', 'deferredLessons', 'defLessonTasks', 'deferredTaskIds', 'gradedDefTasksMap', 'courses', 'customLessons', 'customLessonTasks', 'def_grading', 'instructor_cbta', 'examiner_cbta', 'examiner_grading', 'instructor_grading','groupedLogs','grouped_deferredLogs', 'grouped_customLogs','course_tags', 'validate_tags'));
+        return view('trainings.show', compact('trainingEvent', 'student', 'overallAssessments', 'eventLessons', 'courselessons', 'taskGrades', 'competencyGrades', 'trainingFeedbacks', 'isGradingCompleted', 'isFullyLocked', 'resources', 'instructors', 'defTasks', 'deferredLessons', 'defLessonTasks', 'deferredTaskIds', 'gradedDefTasksMap', 'courses', 'customLessons', 'customLessonTasks', 'def_grading', 'instructor_cbta', 'examiner_cbta', 'examiner_grading', 'instructor_grading','groupedLogs','grouped_deferredLogs', 'grouped_customLogs','course_tags', 'validate_tags', 'course_prerequisites'));
     } 
 
     public function TestshowTrainingEvent(Request $request, $event_id)
@@ -1794,12 +1796,13 @@ class TrainingEventsController extends Controller
 
         if ($lesson_type == "custom") {
             $custom_lesson_id = $request->custom_lesson_id;
-            $deferredLessons = DefLesson::with(['student', 'instructor', 'instructor.documents', 'resource', 'defLesson', 'deftasks.subddddLesson.courseLesson'])
-                ->where('event_id', $trainingEvent->id)
+            $deferredLessons = DefLesson::with(['student', 'instructor', 'instructor.documents', 'resource', 'defLesson', 'deftasks.subddddLesson.courseLesson', 'customtime'])
+                ->where('event_id', $trainingEvent->id) 
                 ->where('id', $custom_lesson_id)
                 ->where('lesson_type', "custom")
                 ->orderBy('id', 'desc')
                 ->get();
+           
 
             $customLessons = DefLesson::with(['student', 'instructor', 'instructor.documents', 'resource', 'defLesson', 'deftasks.subddddLesson.courseLesson'])
                 ->where('event_id', $trainingEvent->id)
@@ -1813,7 +1816,7 @@ class TrainingEventsController extends Controller
         }
         if ($lesson_type == "deferred") {
             $deferred_lesson_id = $request->deferred_lesson_id;
-            $deferredLessons = DefLesson::with(['student', 'instructor', 'instructor.documents', 'resource', 'defLesson', 'deftasks.subddddLesson.courseLesson'])
+            $deferredLessons = DefLesson::with(['student', 'instructor', 'instructor.documents', 'resource', 'defLesson', 'deftasks.subddddLesson.courseLesson', 'customtime'])
                 ->where('event_id', $trainingEvent->id)
                 ->where('id', $deferred_lesson_id)
                 ->where('lesson_type', "deferred")
@@ -2193,6 +2196,9 @@ class TrainingEventsController extends Controller
             : $validatedData['item_ids'];
 
         // UPDATE MAIN DEFERRED LESSON RECORD
+        $lesson = DefLesson::findOrFail($deferredLessons_id);
+                  
+
         DefLesson::where("id", $deferredLessons_id)->update([
             'event_id'      => $eventId,
             'user_id'       => $studentId,
@@ -2211,6 +2217,21 @@ class TrainingEventsController extends Controller
             'operation'     => $request->edit_operation ?? 0,
             'created_by'    => $authId,
         ]);
+
+
+      
+        $get_course = TrainingEvents::where('id', $eventId)->get();
+        $course_id = $get_course[0]->course_id;
+        if ($request->lesson_type == "custom") {
+            $type = 'custom';
+           $this->CustomTimes($lesson, $request->edit_custom_time_type, $course_id, $type);
+        }else{
+            
+             $type = 'def';
+             $this->defCustomTimes($lesson, $request->edit_custom_time_type, $course_id, $type);
+        }
+
+      
 
         // REMOVE OLD TASKS NO LONGER SELECTED
         DefLessonTask::where('def_lesson_id', $deferredLessons_id)
@@ -2283,10 +2304,100 @@ class TrainingEventsController extends Controller
             ])->delete();
         }
 
+         
+
         return response()->json([
             'success' => true,
             'message' => $request->lesson_type
         ], 201);
+    }
+
+    private function defCustomTimes($lesson, $selectedIds, $course_id, $type)
+   {
+        $selectedIds = $selectedIds ?? [];
+        
+        $existing = LessonCustomTime::where('lesson_id', $lesson->id)->where('type', 'def')
+            ->pluck('custom_time_id')
+            ->toArray();
+
+        $toDelete = array_diff($existing, $selectedIds);
+
+        if (!empty($toDelete)) {
+            LessonCustomTime::where('lesson_id', $lesson->id)
+                ->whereIn('custom_time_id', $toDelete)
+                ->where('type', 'def')
+                ->delete();
+        }
+
+        $selectedTimes = CourseCustomTime::where('course_id', $course_id)->whereIn('id', $selectedIds)->get();
+     
+        foreach ($selectedTimes as $t) {
+           $array = array(
+                      'lesson_id' => $lesson->id,
+                      'custom_time_id' => $t->id,
+                      'course_id' => $t->course_id,
+                      'name' => $t->name,
+                      'hours' => $t->hours,
+                      'type' => $type
+           );
+
+            LessonCustomTime::updateOrCreate(
+                [
+                    'lesson_id' => $lesson->id,
+                    'custom_time_id' => $t->id,
+                ],
+                [
+                    'course_id' => $t->course_id,
+                    'name' => $t->name,
+                    'hours' => $t->hours,
+                    'type' => $type
+                ]
+            );
+        }
+    }
+
+   private function CustomTimes($lesson, $selectedIds, $course_id, $type)
+   {
+        $selectedIds = $selectedIds ?? [];
+        
+        $existing = LessonCustomTime::where('lesson_id', $lesson->id)->where('type', 'custom')
+            ->pluck('custom_time_id')
+            ->toArray();
+
+        $toDelete = array_diff($existing, $selectedIds);
+
+        if (!empty($toDelete)) {
+            LessonCustomTime::where('lesson_id', $lesson->id)
+                ->whereIn('custom_time_id', $toDelete)
+                ->where('type', 'custom')
+                ->delete();
+        }
+
+        $selectedTimes = CourseCustomTime::where('course_id', $course_id)->whereIn('id', $selectedIds)->get();
+     
+        foreach ($selectedTimes as $t) {
+           $array = array(
+                      'lesson_id' => $lesson->id,
+                      'custom_time_id' => $t->id,
+                      'course_id' => $t->course_id,
+                      'name' => $t->name,
+                      'hours' => $t->hours,
+                      'type' => $type
+           );
+
+            LessonCustomTime::updateOrCreate(
+                [
+                    'lesson_id' => $lesson->id,
+                    'custom_time_id' => $t->id,
+                ],
+                [
+                    'course_id' => $t->course_id,
+                    'name' => $t->name,
+                    'hours' => $t->hours,
+                    'type' => $type
+                ]
+            );
+        }
     }
 
     public function createGrading(Request $request)
@@ -4577,6 +4688,10 @@ class TrainingEventsController extends Controller
                 ]);
             }
 
+         $get_course = TrainingEvents::where('id', $eventId)->get();
+         $course_id = $get_course[0]->course_id;
+         $this->CustomTimes($defLesson, $request->custom_time_type, $course_id, 'custom');
+
             return response()->json([
                 'success' => true,
                 'message' => 'Custom lesson stored successfully.'
@@ -4668,6 +4783,10 @@ class TrainingEventsController extends Controller
                     'hours_credited' => gmdate("H:i", $creditMinutes * 60),
                     'created_by'    => $authId,
                 ]);
+
+                 $get_course = TrainingEvents::where('id', $eventId)->get();
+                $course_id = $get_course[0]->course_id;
+                 $this->defCustomTimes($defLesson, $request->custom_time_type,$course_id, 'def');
             }
 
             return response()->json([
@@ -6223,18 +6342,31 @@ class TrainingEventsController extends Controller
 
     public function LessonCustomeTimeUpdate(Request $request)
     {
+    //    dd($request->all());
         $request->validate([
             'id' => 'required',
             'training_event_id' => 'required',
            // 'custom_time_id.*' => 'required',
            //    'custom_time_credited.*' => 'required'
         ]);
+          $event_id        = $request->training_event_id;
+          $event_lesson_id = $request->id;
+           $student_id = TrainingEvents::where('id', $event_id)->value('student_id');
 
-        $event_lesson_id = $request->id;
-        $event_id        = $request->training_event_id;
-        $lesson_id = TrainingEventLessons::where('id', $event_lesson_id)->value('lesson_id');
-        $course_id = CourseLesson::where('id', $lesson_id)->value('course_id');
-        $student_id = TrainingEvents::where('id', $event_id)->value('student_id');
+        if($request->lesson_type == "custom" || $request->lesson_type == "deferred"){
+           $get_course = TrainingEvents::where('id', $event_id)->value('course_id');
+           $course_id = $get_course;
+
+               $lesson_id = $event_lesson_id;
+        }else{
+                
+              
+                $lesson_id = TrainingEventLessons::where('id', $event_lesson_id)->value('lesson_id');
+                $course_id = CourseLesson::where('id', $lesson_id)->value('course_id');
+               
+
+        }
+      
 
     
       
@@ -6258,6 +6390,7 @@ class TrainingEventsController extends Controller
                 'name'           => $customTimeName,
                 'hours'          => $request->custom_time_credited[$index],
             );
+          //  dd($array);
         
 
             LessonTimeCredited::create([

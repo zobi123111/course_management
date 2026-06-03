@@ -101,12 +101,13 @@ class DefLesson extends Model
 
     public function customTime()
     {
-        return $this->hasMany(LessonCustomTime::class, 'lesson_id', 'lesson_id');
+        // return $this->hasMany(LessonCustomTime::class, 'lesson_id', 'lesson_id');
+        return $this->hasMany(LessonCustomTime::class, 'lesson_id', 'id');
     }
 
     public function CreditedTime()
     {
-        return $this->hasMany(LessonTimeCredited::class, 'lesson_id', 'lesson_id');
+        return $this->hasMany(LessonTimeCredited::class, 'lesson_id', 'id');
     }
 
     public function deferredSectors()
@@ -125,4 +126,9 @@ class DefLesson extends Model
     {
         return $this->belongsTo(CbtaGrading::class, 'cbta_gradings_id');
     }
+
+    // public function custom_time()
+    // {
+    //      return $this->hasMany(LessonCustomTime::class, 'lesson_id', 'id')->where('type', 'custom');
+    // }
 }
