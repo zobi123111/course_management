@@ -951,8 +951,8 @@
                                         $isEASA = str_contains($atoNum, 'easa');
 
                                         // Instructor licence values (adjust fields if different in your DB)
-                                        $ukInstructorLicence = trim($lesson->instructor_license_number ?? '');
-                                        $easaInstructorLicence = trim($lesson->instructor_license_number_2 ?? '');
+                                        $ukInstructorLicence = trim($lesson->instructor->documents->licence ?? '');
+                                        $easaInstructorLicence = trim($lesson->instructor->documents->licence_2 ?? '');
 
                                         // Determine label + value
                                         if ($isUK && !$isEASA) {
@@ -1362,8 +1362,8 @@
                                                     $isEASA = str_contains($atoNum, 'easa');
 
                                                     // Instructor licence values (adjust fields if different in your DB)
-                                                    $ukInstructorLicence = trim($lesson->instructor_license_number ?? '');
-                                                    $easaInstructorLicence = trim($lesson->instructor_license_number_2 ?? '');
+                                                    $ukInstructorLicence = trim($lesson->instructor->documents->licence ?? '');
+                                                    $easaInstructorLicence = trim($lesson->instructor->documents->licence_2 ?? '');
 
                                                     // Determine label + value
                                                     if ($isUK && !$isEASA) {
@@ -3851,10 +3851,55 @@
                                             @endif
                                             @endif
                                         </h5>
-                                      
+                                        <?php  
+                                            $atoNum = strtolower($trainingEvent->course->ato_num);
+
+                                            $isUK = str_contains($atoNum, 'uk');
+                                            $isEASA = str_contains($atoNum, 'easa');
+
+                                            // Instructor licence values (adjust fields if different in your DB)
+                                            $ukInstructorLicence = trim($eventLesson->instructor->documents->licence ?? '');
+                                            $easaInstructorLicence = trim($eventLesson->instructor->documents->licence_2 ?? '');
+
+                                            // Determine label + value
+                                            if ($isUK && !$isEASA) {
+                                                $instLabel = "Instructor Licence Number (UK)";
+                                                $instructorLicence = !empty($ukInstructorLicence) ? $ukInstructorLicence : 'N/A';
+
+                                            } elseif ($isEASA && !$isUK) {
+                                                $instLabel = "Instructor Licence Number (EASA)";
+                                                $instructorLicence = !empty($easaInstructorLicence) ? $easaInstructorLicence : 'N/A';
+
+                                            } elseif ($isUK && $isEASA) {
+                                                if (empty($ukInstructorLicence) && empty($easaInstructorLicence)) {
+                                                    $instLabel = "Instructor Licence";
+                                                    $instructorLicence = "N/A";
+                                                } else {
+                                                    $instLabel = "Instructor Licence Number";
+                                                    $instructorLicence = implode(', ', array_filter([
+                                                        $ukInstructorLicence,
+                                                        $easaInstructorLicence
+                                                    ]));
+                                                }
+
+                                            } else {
+                                                if (empty($ukInstructorLicence) && empty($easaInstructorLicence)) {
+                                                    $instLabel = "Instructor Licence";
+                                                    $instructorLicence = "N/A";
+                                                } else {
+                                                    $instLabel = "Instructor Licence Number";
+                                                    $instructorLicence = implode(', ', array_filter([
+                                                        $ukInstructorLicence,
+                                                        $easaInstructorLicence
+                                                    ]));
+                                                }
+                                            }
+
+                                            // dump($eventLesson->student_comment); 
+                                        ?>
                                         <div class="d-flex flex-wrap gap-3 mb-3 small-text text-muted">
                                             <div><strong>Instructor:</strong> {{ $eventLesson->instructor->fname ?? '' }} {{ $eventLesson->instructor->lname ?? '' }}</div>
-                                            <div><strong>Licence No:</strong> {{ !empty($eventLesson->instructor_license_number) ? $eventLesson->instructor_license_number : 'N/A' }}</div>
+                                            <div><strong>Licence No:</strong> {{ $instructorLicence }}</div>
                                             <div><strong>Resource:</strong> {{ $eventLesson->resource->name ?? 'N/A' }}</div>
                                             <div><strong>Lesson Date:</strong> {{ ($eventLesson->lesson_date) ? date('d/m/Y', strtotime($eventLesson->lesson_date)) : 'N/A' }}</div>
                                             <div><strong>Start Time:</strong> {{ ($eventLesson->start_time) ? date('H:i', strtotime($eventLesson->start_time)) : 'N/A' }}</div>
@@ -3883,15 +3928,21 @@
                         <h4 class="mb-3 text-primary"><i class="text-primary bi bi-exclamation-triangle-fill me-2"></i>Deferred Lessons</h4>
                         @foreach($defLessonTasks->groupBy('def_lesson_id') as $defLessonId => $tasks)
                         @php $defLesson = $tasks->first()->defLesson;
-                        $documents = $defLesson?->instructor?->documents; // Only one row expected
+                            $documents = $defLesson?->instructor?->documents; // Only one row expected
 
-                        if ($documents && $documents->licence) {
-                        $instructor_lic_no = $documents->licence;
-                        } elseif ($documents && $documents->licence_2) {
-                        $instructor_lic_no = $documents->licence_2;
-                        } else {
-                        $instructor_lic_no = 'N/A';
-                        }
+                            $atoNum = strtolower($trainingEvent->course->ato_num);
+
+                            $isUK   = str_contains($atoNum, 'uk');
+                            $isEASA = str_contains($atoNum, 'easa');
+
+                            if ($isUK) {
+                                $instructor_lic_no = $documents?->licence ?: 'N/A';
+                            } elseif ($isEASA) {
+                                $instructor_lic_no = $documents?->licence_2 ?: 'N/A';
+                            } else {
+                                // Fallback if neither UK nor EASA
+                                $instructor_lic_no = $documents?->licence ?: $documents?->licence_2 ?: 'N/A';
+                            }
                         @endphp
 
                         <?php $is_locked = $defLesson->is_locked; ?>
@@ -3952,22 +4003,48 @@
                         <h4 class="mb-3 text-primary"><i class="text-primary bi bi-exclamation-triangle-fill me-2"></i>Custom Lessons</h4>
                         @foreach($customLessonTasks->groupBy('def_lesson_id') as $defLessonId => $tasks)
                         @php $defLesson = $tasks->first()->defLesson;
-                        $documents = $defLesson?->instructor?->documents; // Only one row expected
+                            $documents = $defLesson?->instructor?->documents; // Only one row expected
 
-                        if ($documents && $documents->licence) {
-                        $instructor_lic_no = $documents->licence;
-                        } elseif ($documents && $documents->licence_2) {
-                        $instructor_lic_no = $documents->licence_2;
-                        } else {
-                        $instructor_lic_no = 'N/A';
-                        }
+                            $atoNum = strtolower($trainingEvent->course->ato_num);
+
+                            $isUK   = str_contains($atoNum, 'uk');
+                            $isEASA = str_contains($atoNum, 'easa');
+
+                            if ($isUK) {
+                                $instructor_lic_no = $documents?->licence ?: 'N/A';
+                            } elseif ($isEASA) {
+                                $instructor_lic_no = $documents?->licence_2 ?: 'N/A';
+                            } else {
+                                // Fallback if neither UK nor EASA
+                                $instructor_lic_no = $documents?->licence ?: $documents?->licence_2 ?: 'N/A';
+                            }
                         @endphp
                         <?php $is_locked = $defLesson->is_locked; ?>
+                        <?php
+
+                            $deflessontype = $defLesson->deftasks?->subddddLesson?->courseLesson?->lesson_type ?? 'N/A';
+
+                            if ($deflessontype == "groundschool") {
+                                $start = strtotime($defLesson->start_time);
+                                $end   = strtotime($defLesson->end_time);
+                            } else {
+                                $start = strtotime($defLesson->takeoff_time);
+                                $end   = strtotime($defLesson->landing_time);
+                            }
+
+                            $seconds = $end - $start;
+
+                            $hours = floor($seconds / 3600);
+                            $minutes = floor(($seconds % 3600) / 60);
+
+                            $creditedhours = sprintf('%02d:%02d', $hours, $minutes);                        
+                        ?>
+
                         <a href="/lesson-grade?lesson_id={{ encode_id($defLesson->id) }}&event_id={{ encode_id($trainingEvent->id) }}&lesson_type=custom" data-locked="{{ $is_locked ? 1 : 0 }}" class="lesson-link">
                             <div class="lesson-item card">
                                 <div class="card-body">
                                     <h5 class="lesson-header mt-3">
-                                        {{ $defLesson->lesson_title }}
+                                        {{ $defLesson->lesson_title }} - (Duration: {{ $creditedhours }} hrs)
 
                                         {{-- Show lock inside link, after text, only for instructors --}}
                                         @if($is_locked == 1 && auth()->user()?->is_admin != 1)
