@@ -25,6 +25,10 @@
             margin-bottom: 15px !important;
         }
 
+        .card-title {
+            padding: 5px 0 10px 0 !important;
+        }
+
         /* hide the pseudo-element arrow only for non-toggleable buttons;
            toggleable panels (examiner/instructor) will get their own visibility */
         .accordion-button:not(.toggleable)::after {
@@ -698,7 +702,15 @@
                     <strong>NOTE:</strong> Please ensure all grading is completed carefully. Once saved, the training event will be locked.
                 </div>
             </div>
-            <h3 class="card-title mb-0">Student : {{ $trainingEvent?->student?->fname }} {{ $trainingEvent?->student?->lname }}</h3>
+            <div class="">
+                @foreach($eventLessons as $eventLesson)
+                    @if($requestedLessonId && $eventLesson->id != $requestedLessonId)
+                        @continue
+                    @endif
+                    <h3 class="card-title mb-0">Lesson : {{ $eventLesson->lesson?->lesson_title }}</h3>
+                @endforeach
+                <h3 class="card-title">Student : {{ $trainingEvent?->student?->fname }} {{ $trainingEvent?->student?->lname }}</h3>
+            </div>
 
             <!-- Default Tabs -->
             <ul class="nav nav-tabs mt-3" id="myTab" role="tablist">
