@@ -526,7 +526,7 @@ class TrainingEventsController extends Controller
 
             $latestTrainingEvent = TrainingEvents::where('student_id', $user_id)
                 ->whereNull('deleted_at')
-                ->latest('created_at')
+                ->latest('course_end_date')
                 ->first();
 
             if (!$hasInitial) {
@@ -536,14 +536,14 @@ class TrainingEventsController extends Controller
 
             } elseif ($latestTrainingEvent) {
 
-                $lastTrainingDate = Carbon::parse($latestTrainingEvent->created_at);
+                $lastTrainingDate = Carbon::parse($latestTrainingEvent->course_end_date);
 
                 if ($lastTrainingDate->copy()->addYear()->isPast()) {
                     $status = 'lapsed';
                     $allowedTypes = ['refresher'];
 
                 } else {
-                        $status = 'valid';
+                    $status = 'valid';
                     $allowedTypes = ['recurrent'];
                 }
 
