@@ -468,38 +468,82 @@ class TrainingEventsController extends Controller
         
         // }
 
-        if ($isInstructorOrExaminer) {
+        // if ($isInstructorOrExaminer) {
 
-            $latestTraining = $user->TeachTrack()
-                ->orderByDesc('created_at')
-                ->whereNull('deleted_at')
-                ->first();
+        //     // $latestTraining = $user->TeachTrack()
+        //     //     ->orderByDesc('created_at')
+        //     //     ->whereNull('deleted_at')
+        //     //     ->first();
+        //     $latestTraining = TrainingEvents::where('student_id', $user_id)
+        //         ->orderByDesc('created_at')
+        //         ->whereNull('deleted_at')
+        //         ->first();
+
+        //     // dd($latestTraining);
+
+        //     $hasInitial = $user->TeachTrack()
+        //         ->whereRaw('LOWER(TRIM(training_type)) = ?', ['initial'])
+        //         ->whereNull('deleted_at')
+        //         ->exists();
+
+        //     $validityMonths = 12;
+
+        //     if (!$hasInitial) {
+
+        //         $status = 'no_initial';
+        //         $allowedTypes = ['initial'];
+
+        //     } elseif ($latestTraining) {
+
+        //         $lastCompletion = Carbon::parse($latestTraining->validation_date);
+        //         $lapseDate = $lastCompletion->copy()->addMonths($validityMonths);
+
+        //         if (now()->greaterThan($lapseDate)) {
+
+        //             $status = 'lapsed';
+        //             $allowedTypes = ['refresher', 'initial'];
+
+        //         } else {
+
+        //             $status = 'valid';
+        //             $allowedTypes = ['recurrent'];
+        //         }
+
+        //     } else {
+
+        //         $status = 'no_training';
+        //         $allowedTypes = ['initial'];
+        //     }
+        
+        // }
+
+        if ($isInstructorOrExaminer) {
 
             $hasInitial = $user->TeachTrack()
                 ->whereRaw('LOWER(TRIM(training_type)) = ?', ['initial'])
                 ->whereNull('deleted_at')
                 ->exists();
 
-            $validityMonths = 12;
+            $latestTrainingEvent = TrainingEvents::where('student_id', $user_id)
+                ->whereNull('deleted_at')
+                ->latest('created_at')
+                ->first();
 
             if (!$hasInitial) {
 
                 $status = 'no_initial';
                 $allowedTypes = ['initial'];
 
-            } elseif ($latestTraining) {
+            } elseif ($latestTrainingEvent) {
 
-                $lastCompletion = Carbon::parse($latestTraining->validation_date);
-                $lapseDate = $lastCompletion->copy()->addMonths($validityMonths);
+                $lastTrainingDate = Carbon::parse($latestTrainingEvent->created_at);
 
-                if (now()->greaterThan($lapseDate)) {
-
+                if ($lastTrainingDate->copy()->addYear()->isPast()) {
                     $status = 'lapsed';
-                    $allowedTypes = ['refresher', 'initial'];
+                    $allowedTypes = ['refresher'];
 
                 } else {
-
-                    $status = 'valid';
+                        $status = 'valid';
                     $allowedTypes = ['recurrent'];
                 }
 
@@ -508,7 +552,6 @@ class TrainingEventsController extends Controller
                 $status = 'no_training';
                 $allowedTypes = ['initial'];
             }
-        
         }
 
         

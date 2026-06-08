@@ -1057,9 +1057,9 @@ $(document).ready(function() {
                         courseDropdown.html('<option value="">Select Course</option>');
                     }
 
-                    if (response.status === 'lapsed') {
-                        alert('⚠ Instructor is LAPSED. Refresher or Initial required.');
-                    }
+                    // if (response.status === 'lapsed') {
+                    //     alert('⚠ Instructor is LAPSED. Refresher or Initial required.');
+                    // }
                 },
                 error: function(xhr) {
                     console.error(xhr.responseText);
