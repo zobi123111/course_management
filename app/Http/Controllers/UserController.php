@@ -1559,9 +1559,18 @@ class UserController extends Controller
 
                     $filePath = null;
 
+                    if (!empty($request->edit_validation_id[$index])) {
+                        $existingModel = UserLicenseValidation::withTrashed()
+                            ->find($request->edit_validation_id[$index]);
+
+                        if ($existingModel) {
+                            $filePath = $existingModel->certificate_file;
+                        }
+                    }
+
                     if ($request->hasFile("edit_certificate_file.$index")) {
                         $filePath = $request->file("edit_certificate_file.$index")
-                                            ->store('license_certificates', 'public');
+                            ->store('license_certificates', 'public');
                     }
 
                     if (!empty($request->edit_validation_id[$index])) {
