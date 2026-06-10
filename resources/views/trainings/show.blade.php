@@ -4288,14 +4288,9 @@
 
                             $deflessontype = $defLesson->deftasks?->subddddLesson?->courseLesson?->lesson_type ?? 'N/A';
 
-                            if ($deflessontype == "groundschool") {
-                                $start = strtotime($defLesson->start_time);
-                                $end   = strtotime($defLesson->end_time);
-                            } else {
-                                $start = strtotime($defLesson->takeoff_time);
-                                $end   = strtotime($defLesson->landing_time);
-                            }
-
+                            $start = strtotime($defLesson->start_time);
+                            $end   = strtotime($defLesson->end_time);
+                            
                             $seconds = $end - $start;
 
                             $hours = floor($seconds / 3600);

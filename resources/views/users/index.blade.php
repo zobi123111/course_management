@@ -354,13 +354,13 @@
                             </div>
 
                             <div class="col-md-6 mb-3">
-                                <label class="form-label">Validity (Months) <span class="text-danger"></span></label>
-                                <input type="number" class="form-control" name="master_validity[]" min="1" placeholder="Months">
+                                <label class="form-label">Issue Date <span class="text-danger"></span></label>
+                                <input type="date" class="form-control" name="issue_date[]">
                             </div>
 
                             <div class="col-md-6 mb-3">
-                                <label class="form-label">Issue Date <span class="text-danger"></span></label>
-                                <input type="date" class="form-control" name="issue_date[]">
+                                <label class="form-label">Validity (Months) <span class="text-danger"></span></label>
+                                <input type="number" class="form-control" name="master_validity[]" min="1" placeholder="Months">
                             </div>
 
                             <div class="col-md-12 mb-3">
@@ -1012,13 +1012,13 @@
                     </div>
 
                     <div class="col-md-6 mb-3">
-                        <label class="form-label">Validity (Months) <span class="text-danger"></span></label>
-                        <input type="number" class="form-control" name="edit_master_validity[]" min="1" placeholder="Months">
+                        <label class="form-label">Issue Date <span class="text-danger"></span></label>
+                        <input type="date" class="form-control" name="edit_issue_date[]">
                     </div>
 
                     <div class="col-md-6 mb-3">
-                        <label class="form-label">Issue Date <span class="text-danger"></span></label>
-                        <input type="date" class="form-control" name="edit_issue_date[]">
+                        <label class="form-label">Validity (Months) <span class="text-danger"></span></label>
+                        <input type="number" class="form-control" name="edit_master_validity[]" min="1" placeholder="Months">
                     </div>
 
                     <div class="col-md-12 mb-3">
@@ -1038,6 +1038,12 @@
                     <div class="col-md-6 mb-3">
                         <label class="form-label">Upload Certificate</label>
                         <input type="file" class="form-control" name="edit_certificate_file[]">
+
+                        <div class="mt-2 existing-certificate-file" style="display:none;">
+                            <a href="" target="_blank" class="btn btn-sm btn-outline-primary view-certificate-file">
+                                View Uploaded File
+                            </a>
+                        </div>
                     </div>
 
                 </div>
@@ -2816,6 +2822,20 @@
                                     $newRow.find('input[name="edit_issue_date[]"]').first().val(validation.issue_date);
 
                                     $newRow.find('input[name="edit_expiry_date[]"]').first().val(validation.expiry_date);
+
+                                    if (validation.certificate_file) {
+
+                                        $newRow.find('.existing-certificate-file').show();
+
+                                        $newRow.find('.view-certificate-file').attr(
+                                            'href',
+                                            "{{ asset('storage') }}/" + validation.certificate_file
+                                        );
+
+                                    } else {
+
+                                        $newRow.find('.existing-certificate-file').hide();
+                                    }
                                 });
                             } else {
                                 // Show only the "Enable License Validation" button
