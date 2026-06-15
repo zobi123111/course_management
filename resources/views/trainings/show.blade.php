@@ -829,19 +829,45 @@
                             @if($trainingEvent->course?->duration_value && $trainingEvent->course?->duration_type)
                             <div class="mb-3">
                                 <strong><i class="text-primary fas fa-hourglass-half"></i> Course Total Duration:</strong>
-                                @php
+                            @php
                                 $value = $trainingEvent->course->duration_value;
-                                $type = $trainingEvent->course->duration_type;
+                                $type  = $trainingEvent->course->duration_type;
 
-                                if ($type === 'hours') {
-                                $label = $value == 1 ? 'hour' : 'hours';
-                                } elseif ($type === 'events') {
-                                $label = $value == 1 ? 'event' : 'events';
+                                $display = '';
+
+                                if ($type === 'hours' && $value !== null) {
+
+                                    // Convert to string to safely split
+                                    $valueStr = (string)$value;
+
+                                if (strpos($valueStr, '.') !== false) {
+                                    list($hour, $minute) = explode('.', $valueStr);
+
+                                    $hour = (int)$hour;
+                                    $minute = (int)$minute;
+
+                                    if ($hour > 0) {
+                                        $display .= $hour . ' ' . ($hour == 1 ? 'hour' : 'hours');
+                                    }
+
+                                    if ($minute > 0) {
+                                        if ($hour > 0) {
+                                            $display .= ' ';
+                                        }
+                                        $display .= $minute . ' mins';
+                                    }
+
                                 } else {
-                                $label = '';
+                                    // Only hours
+                                    $hour = (int)$value;
+                                    $display = $hour . ' ' . ($hour == 1 ? 'hour' : 'hours');
                                 }
-                                @endphp
-                                <span class="badge bg-success text-white">{{ $value }} {{ $label }}</span>
+
+                            } elseif ($type === 'events') {
+                                $display = $value . ' ' . ($value == 1 ? 'event' : 'events');
+                            }
+                            @endphp
+                                <span class="badge bg-success text-white">{{ $display  }} </span>
                             </div>
                             @endif
 
@@ -942,7 +968,7 @@
 
                                 {{-- Total Course Duration --}}
                                 @if($trainingEvent->course?->duration_value && $trainingEvent->course?->duration_type)
-                                @php
+                                <!-- @php
                                     $value = $trainingEvent->course->duration_value;
                                     $type = $trainingEvent->course->duration_type;
                                     $label = match($type) {
@@ -950,10 +976,46 @@
                                         'events' => $value == 1 ? 'event' : 'events',
                                         default => '',
                                     };
-                                @endphp
+                                @endphp -->
                                 <p>
                                     <strong><i class="fas fa-hourglass-half"></i> Total Course Duration:</strong>
-                                    <span class="badge bg-success text-white">{{ $value }} {{ $label }}</span>
+                                 <span class="badge bg-success text-white">
+                                    @php
+                                        $display = '';
+
+                                        if ($type === 'hours' && $value !== null) {
+
+                                            $valueStr = (string)$value;
+
+                                            if (strpos($valueStr, '.') !== false) {
+                                                [$hour, $minute] = explode('.', $valueStr);
+
+                                                $hour = (int)$hour;
+                                                $minute = (int)$minute;
+
+                                                if ($hour > 0) {
+                                                    $display .= $hour . ' ' . ($hour == 1 ? 'hour' : 'hours');
+                                                }
+
+                                                if ($minute > 0) {
+                                                    if ($hour > 0) {
+                                                        $display .= ' ';
+                                                    }
+                                                    $display .= $minute . ' mins';
+                                                }
+
+                                            } else {
+                                                $hour = (int)$value;
+                                                $display = $hour . ' ' . ($hour == 1 ? 'hour' : 'hours');
+                                            }
+
+                                        } elseif ($type === 'events') {
+                                            $display = $value . ' ' . ($value == 1 ? 'event' : 'events');
+                                        }
+
+                                        echo $display;
+                                    @endphp
+                                </span>
                                 </p>
                                 @endif
 

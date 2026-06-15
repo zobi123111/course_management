@@ -34,15 +34,13 @@
                             <p class="mb-1"><i class="bi bi-telephone-fill text-success me-2"></i>Phone Number: <strong>{{ $user->phone_number }}</strong></p>
                         @endif
                         @if($user->date_of_birth)
-                            <p class="mb-1"><i class="bi bi-calendar-date-fill text-success me-2"></i>Date of birth: <strong>{{ $user->date_of_birth }}</strong></p>
+                           <p class="mb-1">
+                                <i class="bi bi-calendar-date-fill text-success me-2"></i>
+                                Date of birth:
+                                <strong>{{ \Carbon\Carbon::parse($user->date_of_birth)->format('d/m/Y') }}</strong>
+                            </p>
                         @endif
                         <p class="mb-1"><i class="bi bi-person-badge-fill text-success me-2"></i>Role: <strong>{{ $user->roles->role_name }}</strong></p>
-
-                        <!-- @if(!empty($extraRoles))
-                        <p class="mb-1"><i class="bi bi-shield-lock-fill text-warning me-2"></i>Extra Roles: <strong>{{ implode(', ', $extraRoles) }}</strong></p>
-                        @endif -->
-
-                        <p class="mb-1"><i class="bi bi-currency-dollar text-info me-2"></i>Currency: {{ $user->currency ?? 'N/A' }}</p>
 
                         <span class="badge {{ $user->status == 1 ? 'bg-success' : 'bg-danger' }} mt-2">
                             {{ $user->status == 1 ? 'Active' : 'Inactive' }}
@@ -50,22 +48,19 @@
                     </div>
                 </div>
 
-                <hr class="my-4">
+                <!-- <hr class="my-4"> -->
 
                 @php
                 $document = $user->documents;
                 @endphp
 
 
-                <div class="col-md-6">
+                <!-- <div class="col-md-6">
                     <h5 class="text-muted mb-2">
                         <i class="bi bi-building text-secondary me-2"></i><strong> Organization Unit : </strong>  {{ $user->organization->org_unit_name ?? 'N/A' }}
                     </h5>
-                    <!-- <div class="p-3 border rounded bg-light">
-                        {{ $user->organization->org_unit_name ?? 'N/A' }}
-                    </div> -->
-                </div>
-                <hr class="my-4">
+                </div> -->
+                <!-- <hr class="my-4"> -->
 
                 <!-- Additional Details: Passport & License -->
 
@@ -659,7 +654,7 @@
                         console.log(response);
                         if (response.success) {
                             // Show success message
-                            alert(response.success);
+                            alert(response.success); 
                             location.reload();
                         } else {
                             // Show general error if success is not returned

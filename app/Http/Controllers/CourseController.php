@@ -457,7 +457,7 @@ class CourseController extends Controller
             'prerequisite_details' => 'nullable|array',
             'prerequisite_type' => 'nullable|array',
             'duration_type' => 'nullable|in:hours,events',
-            'duration_value' => 'nullable|numeric|min:1',
+            'duration_value' => 'nullable|numeric',
             'enable_groundschool_time' => 'nullable|boolean',
             'groundschool_hours' => 'nullable|numeric|min:0',
             'enable_simulator_time' => 'nullable|boolean',
