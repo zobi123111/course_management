@@ -1,4 +1,4 @@
-    @section('title', 'View')
+    @section('title', 'Event Lesson page')
     @section('sub-title', 'Training Event')
     @extends('layout.app')
     @section('content')
@@ -982,8 +982,8 @@
                                     
                                     <div class="col-md-3">
                                         <label class="form-label start-label">Off Block</label>
-                                        <input type="time"
-                                            class="form-control editable"
+                                        <input type="text"
+                                            class="form-control editable timepicker"
                                             name="start_time"
                                             value="{{ $lesson->start_time ? \Carbon\Carbon::parse($lesson->start_time)->format('H:i') : '' }}"
                                             disabled>
@@ -991,8 +991,8 @@
 
                                     <div class="col-md-3">
                                         <label class="form-label">Takeoff</label>
-                                        <input type="time"
-                                            class="form-control editable"
+                                        <input type="text"
+                                            class="form-control editable timepicker"
                                             name="takeoff_time"
                                             value="{{ $lesson->takeoff_time ? \Carbon\Carbon::parse($lesson->takeoff_time)->format('H:i') : '' }}"
                                             disabled>
@@ -1000,8 +1000,8 @@
 
                                     <div class="col-md-3">
                                         <label class="form-label">Landing</label>
-                                        <input type="time"
-                                            class="form-control editable"
+                                        <input type="text"
+                                            class="form-control editable timepicker"
                                             name="landing_time"
                                             value="{{ $lesson->landing_time ? \Carbon\Carbon::parse($lesson->landing_time)->format('H:i') : '' }}"
                                             disabled>
@@ -1009,8 +1009,8 @@
 
                                     <div class="col-md-3">
                                         <label class="form-label end-label">On Block</label>
-                                        <input type="time"
-                                            class="form-control editable"
+                                        <input type="text"
+                                            class="form-control editable timepicker"
                                             name="end_time"
                                             value="{{ $lesson->end_time ? \Carbon\Carbon::parse($lesson->end_time)->format('H:i') : '' }}"
                                             disabled>
@@ -1259,7 +1259,7 @@
                                             $lastLog = $groupedLogs[$eventLesson->lesson_id]->last();
                                             $lockedBy = trim(($lastLog->users->fname ?? '') . ' ' . ($lastLog->users->lname ?? ''));
                                             @endphp
-                                            <span>(Locked By - {{ $lockedBy ?? '' }}, Time - {{ ($lastLog->created_at->format('d M Y, h:i A')) ?? '' }})</span>
+                                            <span>(Locked By - {{ $lockedBy ?? '' }}, Time - {{ ($lastLog->created_at->format('d M Y, H:i')) ?? '' }})</span>
                                             @endif
 
                                             @if($isLocked)
@@ -1286,8 +1286,8 @@
                                         <div><strong>Licence No:</strong> {{ !empty($eventLesson->instructor_license_number) ? $eventLesson->instructor_license_number : 'N/A' }}</div>
                                         <div><strong>Resource:</strong> {{ $eventLesson->resource->name ?? 'N/A' }}</div>
                                         <div><strong>Lesson Date:</strong> {{ ($eventLesson->lesson_date) ? date('d/m/Y', strtotime($eventLesson->lesson_date)) : 'N/A' }}</div>
-                                        <div><strong>Start Time:</strong> {{ ($eventLesson->start_time) ? date('h:i A', strtotime($eventLesson->start_time)) : 'N/A' }}</div>
-                                        <div><strong>End Time:</strong> {{ ($eventLesson->end_time) ? date('h:i A', strtotime($eventLesson->end_time)) : 'N/A' }}</div>
+                                        <div><strong>Start Time:</strong> {{ ($eventLesson->start_time) ? date('H:i', strtotime($eventLesson->start_time)) : 'N/A' }}</div>
+                                        <div><strong>End Time:</strong> {{ ($eventLesson->end_time) ? date('H:i', strtotime($eventLesson->end_time)) : 'N/A' }}</div>
                                         <div><strong>Departure Airfield:</strong> {{ !empty($eventLesson->departure_airfield) ? $eventLesson->departure_airfield : 'N/A' }}</div>
                                         <div><strong>Destination Airfield:</strong> {{ !empty($eventLesson->destination_airfield) ? $eventLesson->destination_airfield : 'N/A' }}</div>
                                     </div>
@@ -1300,8 +1300,8 @@
                                                 <div><strong>Licence No:</strong> {{ !empty($eventLesson->instructor_license_number) ? $eventLesson->instructor_license_number : 'N/A' }}</div>
                                                 <div><strong>Resource:</strong> {{ $sector->resourceData->name ?? 'N/A' }}</div>
                                                 <div><strong>Lesson Date:</strong> {{ ($sector->lesson_date) ? date('d/m/Y', strtotime($sector->lesson_date)) : 'N/A' }}</div>
-                                                <div><strong>Start Time:</strong> {{ ($sector->start_time) ? date('h:i A', strtotime($sector->start_time)) : 'N/A' }}</div>
-                                                <div><strong>End Time:</strong> {{ ($sector->end_time) ? date('h:i A', strtotime($sector->end_time)) : 'N/A' }}</div>
+                                                <div><strong>Start Time:</strong> {{ ($sector->start_time) ? date('H:i', strtotime($sector->start_time)) : 'N/A' }}</div>
+                                                <div><strong>End Time:</strong> {{ ($sector->end_time) ? date('H:i', strtotime($sector->end_time)) : 'N/A' }}</div>
                                                 <div><strong>Departure Airfield:</strong> {{ !empty($sector->departure_airfield) ? $sector->departure_airfield : 'N/A' }}</div>
                                                 <div><strong>Destination Airfield:</strong> {{ !empty($sector->destination_airfield) ? $sector->destination_airfield : 'N/A' }}</div>
                                             @endforeach
@@ -4219,25 +4219,25 @@
 
                         <div class="col-md-3">
                             <label class="start-label">Start</label>
-                            <input type="time" class="form-control editable" 
+                            <input type="text" class="form-control editable timepicker" 
                                 name="sectors[${sectorIndex}][start_time]">
                         </div>
 
                         <div class="col-md-3">
                             <label>Takeoff</label>
-                            <input type="time" class="form-control editable" 
+                            <input type="text" class="form-control editable timepicker" 
                                 name="sectors[${sectorIndex}][takeoff_time]">
                         </div>
 
                         <div class="col-md-3">
                             <label>Landing</label>
-                            <input type="time" class="form-control editable" 
+                            <input type="text" class="form-control editable timepicker" 
                                 name="sectors[${sectorIndex}][landing_time]">
                         </div>
 
                         <div class="col-md-3">
                             <label class="end-label">Finish</label>
-                            <input type="time" class="form-control editable" 
+                            <input type="text" class="form-control editable timepicker" 
                                 name="sectors[${sectorIndex}][end_time]">
                         </div>
 
@@ -4251,11 +4251,28 @@
                 $("#sectorContainer").append(html);
                 sectorIndex++;
                 toggleSectorFields();
+                initAddedTimepickers($("#sectorContainer .sector-row").last());
             });
 
             $(document).on("click", ".removeSectorBtn", function () {
                 $(this).closest(".sector-row").remove();
             });
+
+            function initAddedTimepickers(container) {
+                if (typeof flatpickr !== 'undefined') {
+                    container.find('.timepicker').each(function () {
+                        if (!this._flatpickr) {
+                            flatpickr(this, {
+                                enableTime: true,
+                                noCalendar: true,
+                                dateFormat: 'H:i',
+                                time_24hr: true,
+                                allowInput: true
+                            });
+                        }
+                    });
+                }
+            }
         });
     </script>
 
@@ -4841,6 +4858,22 @@
         
     </script>
 
+    <!-- Flatpickr (24-hour time picker) -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            if (typeof flatpickr !== 'undefined') {
+                flatpickr('.timepicker', {
+                    enableTime: true,
+                    noCalendar: true,
+                    dateFormat: 'H:i',
+                    time_24hr: true,
+                    allowInput: true
+                });
+            }
+        });
+    </script>
 
     @endsection
     

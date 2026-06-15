@@ -1,4 +1,4 @@
-    @section('title', 'View')
+    @section('title', 'Training Event View')
     @section('sub-title', 'Training Event')
     @extends('layout.app')
     @section('content')
@@ -932,7 +932,6 @@
                             </div>
                         </div>
 
-
                         {{-- Event Summary Section --}}
                         <div class="card shadow-sm mt-4 border-primary">
                             <div class="card-header bg-primary text-white mb-3">
@@ -1545,13 +1544,64 @@
                                             }
                                         }
 
+                                        // ================
+
+                                        $lessonTime = 0;
+
+                                        foreach ($trainingEvent->eventLessons as $lesson) {
+
+                                            if (($lesson->lesson->lesson_type ?? null) == 'groundschool') {
+                                                continue;
+                                            }
+
+                                            $starttime = strtotime($lesson->start_time);
+                                            $endtime = strtotime($lesson->end_time);
+
+                                            if ($starttime && $endtime && $endtime > $starttime) {
+                                                $lessonTime += ($endtime - $starttime);
+                                            }   
+                                        }
+
+                                        if (isset($deferredLessons) && $deferredLessons->isNotEmpty()) {
+                                            foreach ($deferredLessons as $defLesson) {
+
+                                                if (($customLesson->deftasks?->subddddLesson?->courseLesson?->lesson_type ?? null) == 'groundschool') {
+                                                    continue;
+                                                }
+                                            
+                                                $starttime = strtotime($defLesson->start_time);
+                                                $endtime = strtotime($defLesson->end_time);
+
+                                                if ($starttime && $endtime && $endtime > $starttime) {
+                                                    $lessonTime += ($endtime - $starttime);
+                                                }
+                                            }
+                                        }
+
+
+                                        if (isset($customLessons) && $customLessons->isNotEmpty()) {
+                                            foreach ($customLessons as $customLesson) {
+
+                                                if (($customLesson->deftasks?->subddddLesson?->courseLesson?->lesson_type ?? null) == 'groundschool') {
+                                                    continue;
+                                                }
+                                            
+                                                $starttime = strtotime($customLesson->start_time);
+                                                $endtime = strtotime($customLesson->end_time);
+
+                                                if ($starttime && $endtime && $endtime > $starttime) {
+                                                    $lessonTime += ($endtime - $starttime);
+                                                }
+                                            }
+                                        }
+
                                         // 3. Sector flight time (existing)
                                         $sectorFlightTime = $sectorFlightTime ?? 0;
 
                                         // FINAL — ONLY real takeoff → landing times
                                         $totalFlightTime = $lessonFlightTime + $deferredFlightTime + $sectorFlightTime;
 
-                                        $blockCredited = $totalSectorblockTime + $TotalBlockCredited;
+                                        $blockCredited = $totalSectorblockTime + $lessonTime;
 
                                         // foreach ($trainingEvent->eventLessons as $eventLesson) {
 
@@ -1706,24 +1756,10 @@
                             </div>
                         </div>
 
-
-
                         @php
                             $eventLesson = null;
                         @endphp
-                        <!-- <pre> -->
-                        <!-- @if($trainingEvent?->course?->course_type === 'one_event' && $trainingEvent->eventLessons->count())
-
-                            @php
-                                $eventLesson = $trainingEvent->eventLessons->first() ?? null;
-                                $lessons = collect([$eventLesson]);
-                            @endphp
-
-                        @else
-                            @php
-                                $lessons = $trainingEvent->eventLessons;
-                            @endphp
-                        @endif -->
+                        
                         @if($trainingEvent->eventLessons->count())
                             @php
                                 $lessons = $trainingEvent->eventLessons;
@@ -1859,7 +1895,7 @@
                                             {{ $isGroundschool ? 'Start Time:' : 'Off blocks:' }}
                                         </strong><br>
                                         @php
-                                            $startTime = $isGroundschool ? $lesson->start_time : $lesson->takeoff_time;
+                                            $startTime = $lesson->start_time;
                                         @endphp
 
                                         @if(!empty($startTime) && $startTime !== '00:00:00')
@@ -1872,7 +1908,6 @@
                                     </div>
 
                                     @if(isset($lessonType) && $lessonType != 'groundschool')
-
                                         <div class="col-md-2 mt-3">
                                             <strong><i class="text-primary fas fa-plane-arrival"></i> Arrive:</strong><br>
                                             {{ $lesson->destination_airfield ?? 'N/A' }}
@@ -1885,7 +1920,7 @@
                                             {{ $isGroundschool ? 'End Time:' : 'On blocks:' }}
                                         </strong><br>
                                         @php
-                                            $endTime = $isGroundschool ? $lesson->end_time : $lesson->landing_time;
+                                            $endTime = $lesson->end_time;
                                         @endphp
 
                                         @if(!empty($endTime) && $endTime !== '00:00:00')
@@ -1897,29 +1932,19 @@
                                         @endif
                                     </div>
 
-                                        <!-- <div class="col-md-2 mt-2">
-                                            <strong><i class="text-primary fas fa-clock"></i> End:</strong><br>
-                                            {{ date('H:i', strtotime($lesson->end_time)) }}
-                                        </div> -->
-
-                               
-
-                                 
-
                                     @if($lessonType === 'groundschool')
                                         <div class="col-md-2 mt-3">
                                             <strong><i class="text-primary fas fa-hourglass-half"></i> Duration:</strong><br>
                                             {{ $trainingEvent->course->groundschool_hours ?? 'N/A' }}
                                         </div>
                                     @elseif($lessonType === 'simulator')
-                                    <div class="col-md-2 mt-3">
-                                        <strong><i class="text-primary fas fa-hourglass-half"></i> Duration:</strong><br>
-                                        {{ $trainingEvent->course->simulator_hours ?? 'N/A' }}
-                                    </div>
+                                        <div class="col-md-2 mt-3">
+                                            <strong><i class="text-primary fas fa-hourglass-half"></i> Duration:</strong><br>
+                                            {{ $trainingEvent->course->simulator_hours ?? 'N/A' }}
+                                        </div>
                                     @endif
 
                                     @php
-
                                         if ($isGroundschool) {
 
                                             $credited = $lesson->hours_credited ?? '00:00';
@@ -1949,13 +1974,13 @@
 
                                             // Main lesson block time
                                             if (
-                                                !empty($lesson->takeoff_time) &&
-                                                !empty($lesson->landing_time) &&
-                                                $lesson->takeoff_time !== '00:00:00' &&
-                                                $lesson->landing_time !== '00:00:00'
+                                                !empty($lesson->start_time) &&
+                                                !empty($lesson->end_time) &&
+                                                $lesson->start_time !== '00:00:00' &&
+                                                $lesson->end_time !== '00:00:00'
                                             ) {
-                                                $takeoff = strtotime($lesson->takeoff_time);
-                                                $landing = strtotime($lesson->landing_time);
+                                                $takeoff = strtotime($lesson->start_time);
+                                                $landing = strtotime($lesson->end_time);
 
                                                 if ($landing > $takeoff) {
                                                     $totalMinutes += ($landing - $takeoff) / 60;
@@ -1966,13 +1991,13 @@
                                             foreach ($lesson->sectors as $sector) {
 
                                                 if (
-                                                    !empty($sector->takeoff_time) &&
-                                                    !empty($sector->landing_time) &&
-                                                    $sector->takeoff_time !== '00:00:00' &&
-                                                    $sector->landing_time !== '00:00:00'
+                                                    !empty($sector->start_time) &&
+                                                    !empty($sector->end_time) &&
+                                                    $sector->start_time !== '00:00:00' &&
+                                                    $sector->end_time !== '00:00:00'
                                                 ) {
-                                                    $takeoff = strtotime($sector->takeoff_time);
-                                                    $landing = strtotime($sector->landing_time);
+                                                    $takeoff = strtotime($sector->start_time);
+                                                    $landing = strtotime($sector->end_time);
 
                                                     if ($landing > $takeoff) {
                                                         $totalMinutes += ($landing - $takeoff) / 60;
@@ -1985,11 +2010,9 @@
                                         $finalMinutes = $totalMinutes % 60;
                                         $finalTime    = sprintf('%02d:%02d', $finalHours, $finalMinutes);
 
-                                         $tooltipText = $isGroundschool
-                                            ? 'Calculated from Hours Credited + Sector Start Time - End Time'
-                                            : 'Calculated from Takeoff Time - Landing Time (Lesson + Sectors)';
+                                         $tooltipText = 'Calculated from Lesson and Sector (Start Time - End Time)';
                                             
-                                        @endphp
+                                    @endphp
                                     <div class="col-md-2 mt-3">
                                         <strong><i class="text-primary fas fa-hourglass-half"></i> Block Hours:</strong> 
                                         <span class="custom-tooltip">
@@ -2001,7 +2024,6 @@
                                         {{ $finalTime }} 
                                        
                                     </div>
-
 
                                     <!-- // Operation -->
                                     <?php
@@ -2021,6 +2043,104 @@
                                                 @endif
                                             </div>
                                         @endif
+                                    @endif
+
+                                    @if($lessonType !== 'groundschool')
+                                        <div class="col-md-2 mt-3">
+                                            <strong>
+                                                <i class="text-primary fas fa-clock"></i>
+                                                Takeoff Time
+                                            </strong><br>
+                                            @php
+                                                $takeofftime = $lesson->takeoff_time;
+                                            @endphp
+
+                                            @if(!empty($takeofftime) && $takeofftime !== '00:00:00')
+                                                {{ date('H:i', strtotime($takeofftime)) }}
+                                            @elseif($takeofftime === '00:00:00')
+                                                {{ $takeofftime }}
+                                            @else
+                                                -
+                                            @endif
+                                        </div>
+
+                                        <div class="col-md-2 mt-3">
+                                            <strong>
+                                                <i class="text-primary fas fa-clock"></i>
+                                                Landing Time
+                                            </strong><br>
+                                            @php
+                                                $landingtime = $lesson->landing_time;
+                                            @endphp
+
+                                            @if(!empty($landingtime) && $landingtime !== '00:00:00')
+                                                {{ date('H:i', strtotime($landingtime)) }}
+                                            @elseif($landingtime === '00:00:00')
+                                                {{ $landingtime }}
+                                            @else
+                                                -
+                                            @endif
+                                        </div>
+
+                                        @php
+                                            if (!$isGroundschool) {
+
+                                                $totalMinutes = 0;
+
+                                                // Main lesson block time
+                                                if (
+                                                    !empty($lesson->takeoff_time) &&
+                                                    !empty($lesson->landing_time) &&
+                                                    $lesson->takeoff_time !== '00:00:00' &&
+                                                    $lesson->landing_time !== '00:00:00'
+                                                ) {
+                                                    $takeoff = strtotime($lesson->takeoff_time);
+                                                    $landing = strtotime($lesson->landing_time);
+
+                                                    if ($landing > $takeoff) {
+                                                        $totalMinutes += ($landing - $takeoff) / 60;
+                                                    }
+                                                }
+
+                                                // Sector block times
+                                                foreach ($lesson->sectors as $sector) {
+
+                                                    if (
+                                                        !empty($sector->takeoff_time) &&
+                                                        !empty($sector->landing_time) &&
+                                                        $sector->takeoff_time !== '00:00:00' &&
+                                                        $sector->landing_time !== '00:00:00'
+                                                    ) {
+                                                        $takeoff = strtotime($sector->takeoff_time);
+                                                        $landing = strtotime($sector->landing_time);
+
+                                                        if ($landing > $takeoff) {
+                                                            $totalMinutes += ($landing - $takeoff) / 60;
+                                                        }
+                                                    }
+                                                }
+
+                                            }
+
+                                            $finalflightHours   = floor($totalMinutes / 60);
+                                            $finalflightMinutes = $totalMinutes % 60;
+                                            $finalflightTime    = sprintf('%02d:%02d', $finalflightHours, $finalflightMinutes);
+
+                                            $tooltipfilghtText = 'Calculated from Lesson and Sector (Takeoff Time - Landing time)';
+                                                
+                                        @endphp
+
+                                        <div class="col-md-2 mt-3">
+                                            <strong><i class="text-primary fas fa-hourglass-half"></i> Flight Hours:</strong> 
+                                            <span class="custom-tooltip">
+                                                <i class="fas fa-info-circle text-primary ms-1 fa-xs" style="font-size:12px; cursor:help;"></i>
+                                                <span class="tooltip-text">{{ $tooltipfilghtText }}</span>
+                                            </span>
+                                            <br>
+                                            <!-- {{ $lesson->hours_credited ?? '00:00' }} -->
+                                            {{ $finalflightTime }} 
+                                        
+                                        </div>
                                     @endif
 
                                     <!-- // Rank -->
@@ -2354,6 +2474,72 @@
                                                     @endif
                                                 @endif
 
+                                                @if($lessonType !== 'groundschool')
+                                                    <div class="col-md-2 mt-3">
+                                                        <strong>
+                                                            <i class="text-primary fas fa-clock"></i>
+                                                            Takeoff Time
+                                                        </strong><br>
+                                                        @php
+                                                            $takeofftime = $sector->takeoff_time;
+                                                        @endphp
+
+                                                        @if(!empty($takeofftime) && $takeofftime !== '00:00:00')
+                                                            {{ date('H:i', strtotime($takeofftime)) }}
+                                                        @elseif($takeofftime === '00:00:00')
+                                                            {{ $takeofftime }}
+                                                        @else
+                                                            -
+                                                        @endif
+                                                    </div>
+
+                                                    <div class="col-md-2 mt-3">
+                                                        <strong>
+                                                            <i class="text-primary fas fa-clock"></i>
+                                                            Landing Time
+                                                        </strong><br>
+                                                        @php
+                                                            $landingtime = $sector->landing_time;
+                                                        @endphp
+
+                                                        @if(!empty($landingtime) && $landingtime !== '00:00:00')
+                                                            {{ date('H:i', strtotime($landingtime)) }}
+                                                        @elseif($landingtime === '00:00:00')
+                                                            {{ $landingtime }}
+                                                        @else
+                                                            -
+                                                        @endif
+                                                    </div>
+
+                                                    @php
+                                                        if (!$isGroundschool) {
+                                                            $totalflightMinutes = 0;
+
+                                                            if(!empty($sector->takeoff_time) && !empty($sector->landing_time) && 
+                                                            $sector->takeoff_time !== '00:00:00' && $sector->landing_time !== '00:00:00') 
+                                                            {
+                                                                $start = strtotime($sector->takeoff_time);
+                                                                $end   = strtotime($sector->landing_time);
+
+                                                                if($end > $start) {
+                                                                    $diffMin = ($end - $start) / 60; // difference in minutes
+                                                                    $totalflightMinutes += $diffMin;
+                                                                }
+                                                            }
+                                                            
+                                                            $sectorfinalFlightHours = floor($totalflightMinutes / 60);
+                                                            $sectorfinalFLightMinutes = $totalflightMinutes % 60;
+                                                            $sectorfinalFlightTime = sprintf('%02d:%02d', $sectorfinalFlightHours, $sectorfinalFLightMinutes);
+                                                        }
+
+                                                    @endphp
+
+                                                    <div class="col-md-2 mt-3">
+                                                        <strong><i class="text-primary fas fa-hourglass-half"></i> Flight Hours:</strong><br>
+                                                        {{ $sectorfinalFlightTime }}
+                                                    </div>
+                                                @endif
+
                                             </div>
                                         @endforeach
 
@@ -2682,69 +2868,27 @@
 
                                         $totalMinutes = 0;
 
-                                        // Main deferred lesson
-                                        if ($isGroundschool) {
+                                        if (
+                                            !empty($def->start_time) &&
+                                            !empty($def->end_time)
+                                        ) {
+                                            $start = strtotime($def->start_time);
+                                            $end   = strtotime($def->end_time);
 
-                                            if (
-                                                !empty($def->start_time) &&
-                                                !empty($def->end_time)
-                                            ) {
-                                                $start = strtotime($def->start_time);
-                                                $end   = strtotime($def->end_time);
-
-                                                if ($end > $start) {
-                                                    $totalMinutes += ($end - $start) / 60;
-                                                }
-                                            }
-
-                                        } else {
-
-                                            if (
-                                                !empty($def->takeoff_time) &&
-                                                !empty($def->landing_time)
-                                            ) {
-                                                $takeoff = strtotime($def->takeoff_time);
-                                                $landing = strtotime($def->landing_time);
-
-                                                if ($landing > $takeoff) {
-                                                    $totalMinutes += ($landing - $takeoff) / 60;
-                                                }
+                                            if ($end > $start) {
+                                                $totalMinutes += ($end - $start) / 60;
                                             }
                                         }
+                                      
 
                                         // Deferred sectors
                                         foreach ($def->deferredSectors as $sector) {
+                                            if ( !empty($sector->start_time) && !empty($sector->end_time) && $sector->start_time !== '00:00:00' && $sector->end_time !== '00:00:00') {
+                                                $start = strtotime($sector->start_time);
+                                                $end   = strtotime($sector->end_time);
 
-                                            if ($isGroundschool) {
-
-                                                if (
-                                                    !empty($sector->start_time) &&
-                                                    !empty($sector->end_time) &&
-                                                    $sector->start_time !== '00:00:00' &&
-                                                    $sector->end_time !== '00:00:00'
-                                                ) {
-                                                    $start = strtotime($sector->start_time);
-                                                    $end   = strtotime($sector->end_time);
-
-                                                    if ($end > $start) {
-                                                        $totalMinutes += ($end - $start) / 60;
-                                                    }
-                                                }
-
-                                            } else {
-
-                                                if (
-                                                    !empty($sector->takeoff_time) &&
-                                                    !empty($sector->landing_time) &&
-                                                    $sector->takeoff_time !== '00:00:00' &&
-                                                    $sector->landing_time !== '00:00:00'
-                                                ) {
-                                                    $takeoff = strtotime($sector->takeoff_time);
-                                                    $landing = strtotime($sector->landing_time);
-
-                                                    if ($landing > $takeoff) {
-                                                        $totalMinutes += ($landing - $takeoff) / 60;
-                                                    }
+                                                if ($end > $start) {
+                                                    $totalMinutes += ($end - $start) / 60;
                                                 }
                                             }
                                         }
@@ -2754,9 +2898,7 @@
 
                                         $blockHours = sprintf('%02d:%02d', $hours, $minutes);
 
-                                        $tooltipText = $isGroundschool
-                                            ? 'Calculated from Lesson Start/End Time + Deferred Sector Start/End Times'
-                                            : 'Calculated from Lesson Takeoff/Landing Time + Deferred Sector Takeoff/Landing Times';
+                                        $tooltipText = 'Calculated from Deferred Lesson + Deferred Sector Start/End Times';
                                     @endphp
                                
                                  
@@ -2790,6 +2932,72 @@
                                             </div>
                                         @endif   
                                     @endif 
+
+                                    @if($lessonType !== 'groundschool')
+                                        <div class="col-md-2 mt-3">
+                                            <strong>
+                                                <i class="text-primary fas fa-clock"></i>
+                                                Takeoff Time
+                                            </strong><br>
+                                            @php
+                                                $takeofftime = $def->takeoff_time;
+                                            @endphp
+
+                                            @if(!empty($takeofftime) && $takeofftime !== '00:00:00')
+                                                {{ date('H:i', strtotime($takeofftime)) }}
+                                            @elseif($takeofftime === '00:00:00')
+                                                {{ $takeofftime }}
+                                            @else
+                                                -
+                                            @endif
+                                        </div>
+
+                                        <div class="col-md-2 mt-3">
+                                            <strong>
+                                                <i class="text-primary fas fa-clock"></i>
+                                                Landing Time
+                                            </strong><br>
+                                            @php
+                                                $landingtime = $def->landing_time;
+                                            @endphp
+
+                                            @if(!empty($landingtime) && $landingtime !== '00:00:00')
+                                                {{ date('H:i', strtotime($landingtime)) }}
+                                            @elseif($landingtime === '00:00:00')
+                                                {{ $landingtime }}
+                                            @else
+                                                -
+                                            @endif
+                                        </div>
+
+                                        @php
+                                            if (!$isGroundschool) {
+                                                $totalflightMinutes = 0;
+
+                                                if(!empty($def->takeoff_time) && !empty($def->landing_time) && 
+                                                $def->takeoff_time !== '00:00:00' && $def->landing_time !== '00:00:00') 
+                                                {
+                                                    $start = strtotime($def->takeoff_time);
+                                                    $end   = strtotime($def->landing_time);
+
+                                                    if($end > $start) {
+                                                        $diffMin = ($end - $start) / 60; // difference in minutes
+                                                        $totalflightMinutes += $diffMin;
+                                                    }
+                                                }
+                                                
+                                                $deffinalFlightHours = floor($totalflightMinutes / 60);
+                                                $deffinalFLightMinutes = $totalflightMinutes % 60;
+                                                $deffinalFlightTime = sprintf('%02d:%02d', $deffinalFlightHours, $deffinalFLightMinutes);
+                                            }
+
+                                        @endphp
+
+                                        <div class="col-md-2 mt-3">
+                                            <strong><i class="text-primary fas fa-hourglass-half"></i> Flight Hours:</strong><br>
+                                            {{ $deffinalFlightTime }}
+                                        </div>
+                                    @endif
                                     
                                     @if($def->customTime->isNotEmpty())
                                           <div class="col-md-12 mt-3">
@@ -2946,6 +3154,69 @@
                                                         </div>
                                                     @endif
                                                 @endif
+
+                                                @if($lessonType !== 'groundschool')
+                                                    <div class="col-md-2 mt-3">
+                                                        <strong>
+                                                            <i class="text-primary fas fa-clock"></i>
+                                                            Takeoff Time
+                                                        </strong><br>
+                                                        @php
+                                                            $takeofftime = $sector->takeoff_time;
+                                                        @endphp
+
+                                                        @if(!empty($takeofftime) && $takeofftime !== '00:00:00')
+                                                            {{ date('H:i', strtotime($takeofftime)) }}
+                                                        @elseif($takeofftime === '00:00:00')
+                                                            {{ $takeofftime }}
+                                                        @else
+                                                            -
+                                                        @endif
+                                                    </div>
+
+                                                    <div class="col-md-2 mt-3">
+                                                        <strong>
+                                                            <i class="text-primary fas fa-clock"></i>
+                                                            Landing Time
+                                                        </strong><br>
+                                                        @php
+                                                            $landingtime = $sector->landing_time;
+                                                        @endphp
+
+                                                        @if(!empty($landingtime) && $landingtime !== '00:00:00')
+                                                            {{ date('H:i', strtotime($landingtime)) }}
+                                                        @elseif($landingtime === '00:00:00')
+                                                            {{ $landingtime }}
+                                                        @else
+                                                            -
+                                                        @endif
+                                                    </div>
+
+                                                    @php
+                                                        $totalMinutes = 0;
+
+                                                        if(!empty($sector->takeoff_time) && !empty($sector->landing_time) && 
+                                                        $sector->takeoff_time !== '00:00:00' && $sector->landing_time !== '00:00:00') 
+                                                        {
+                                                            $start = strtotime($sector->takeoff_time);
+                                                            $end   = strtotime($sector->landing_time);
+
+                                                            if($end > $start) {
+                                                                $diffMin = ($end - $start) / 60;
+                                                                $totalMinutes += $diffMin;
+                                                            }
+                                                        }
+                                                        
+                                                        $sectorfinalHours = floor($totalMinutes / 60);
+                                                        $sectorfinalMinutes = $totalMinutes % 60;
+                                                        $deffsectorinalFlightTime = sprintf('%02d:%02d', $sectorfinalHours, $sectorfinalMinutes);
+                                                    @endphp
+
+                                                    <div class="col-md-2 mt-3">
+                                                        <strong><i class="text-primary fas fa-hourglass-half"></i> Flight Hours:</strong><br>
+                                                        {{ $deffsectorinalFlightTime }}
+                                                    </div>
+                                                @endif
                                             </div>
                                         @endforeach
 
@@ -3001,140 +3272,132 @@
                                 <i class="text-primary fas fa-exclamation-circle me-2"></i>
                                 Custom Lessons
                             </h4>
-                        <!-- <strong class="mt-3"><i class="text-primary fas fa-exclamation-circle"></i> Custom Lessons:</strong> -->
-                        @foreach($customLessons as $def)
-                        @php
-                            $start = strtotime($def->start_time);
-                            $end = strtotime($def->end_time);
-                            $duration = max(0, $end - $start);
+                            <!-- <strong class="mt-3"><i class="text-primary fas fa-exclamation-circle"></i> Custom Lessons:</strong> -->
+                            @foreach($customLessons as $def)
+                            @php
+                                $start = strtotime($def->start_time);
+                                $end = strtotime($def->end_time);
+                                $duration = max(0, $end - $start);
 
-                            $atoNum = strtolower($trainingEvent->course->ato_num);
+                                $atoNum = strtolower($trainingEvent->course->ato_num);
 
-                            $isUK = str_contains($atoNum, 'uk');
-                            $isEASA = str_contains($atoNum, 'easa');
+                                $isUK = str_contains($atoNum, 'uk');
+                                $isEASA = str_contains($atoNum, 'easa');
 
-                            $documents = $def?->instructor?->documents;
+                                $documents = $def?->instructor?->documents;
 
-                            $ukLicence = $documents?->licence ? trim($documents->licence) : '';
-                            $easaLicence = $documents?->licence_2 ? trim($documents->licence_2) : '';
+                                $ukLicence = $documents?->licence ? trim($documents->licence) : '';
+                                $easaLicence = $documents?->licence_2 ? trim($documents->licence_2) : '';
 
-                            if ($isUK && !$isEASA) {
-                                $instLabel = "Licence (UK)";
-                                $instructor_lic_no = $ukLicence ?: 'N/A';
+                                if ($isUK && !$isEASA) {
+                                    $instLabel = "Licence (UK)";
+                                    $instructor_lic_no = $ukLicence ?: 'N/A';
 
-                            } elseif ($isEASA && !$isUK) {
-                                $instLabel = "Licence (EASA)";
-                                $instructor_lic_no = $easaLicence ?: 'N/A';
+                                } elseif ($isEASA && !$isUK) {
+                                    $instLabel = "Licence (EASA)";
+                                    $instructor_lic_no = $easaLicence ?: 'N/A';
 
-                            } elseif ($isUK && $isEASA) {
-                                if (empty($ukLicence) && empty($easaLicence)) {
-                                    $instLabel = "Instructor Licence";
-                                    $instructor_lic_no = "N/A";
+                                } elseif ($isUK && $isEASA) {
+                                    if (empty($ukLicence) && empty($easaLicence)) {
+                                        $instLabel = "Instructor Licence";
+                                        $instructor_lic_no = "N/A";
+                                    } else {
+                                        $instLabel = "Licence";
+                                        $instructor_lic_no = implode(', ', array_filter([$ukLicence, $easaLicence]));
+                                    }
+
                                 } else {
-                                    $instLabel = "Licence";
-                                    $instructor_lic_no = implode(', ', array_filter([$ukLicence, $easaLicence]));
+                                    if (empty($ukLicence) && empty($easaLicence)) {
+                                        $instLabel = "Instructor Licence";
+                                        $instructor_lic_no = "N/A";
+                                    } else {
+                                        $instLabel = "Licence";
+                                        $instructor_lic_no = implode(', ', array_filter([$ukLicence, $easaLicence]));
+                                    }
                                 }
-
-                            } else {
-                                if (empty($ukLicence) && empty($easaLicence)) {
-                                    $instLabel = "Instructor Licence";
-                                    $instructor_lic_no = "N/A";
-                                } else {
-                                    $instLabel = "Licence";
-                                    $instructor_lic_no = implode(', ', array_filter([$ukLicence, $easaLicence]));
-                                }
-                            }
-                        @endphp
-
-                        <div class="row mb-4 p-3 border rounded bg-light shadow-sm">
-                            <div class="col-md-6 mb-2 ">
-                                <strong><i class="text-primary fas fa-book"></i> Lesson Name:</strong>
-                                <span class="text-primary">{{ $def->lesson_title ?? 'Untitled' }}</span>
-                            </div>
-                            <div class="col-md-6 mb-2" style="text-align:end">
-                                <button id="edit_custom_lesson" class="btn btn-primary" data-event_id="{{ $def->event_id }}" data-custom-lesson-id="{{$def->id }}" data-lesson-Type="custom">Edit</button>
-
-                                <button id="delete_custom_lesson" class="btn btn-danger" data-event_id="{{ $def->event_id }}" data-custom-lesson-id="{{$def->id }}" data-lesson-Type="custom">Delete</button>
-                            </div>
-
-                            <div class="row mb-3">
-                                <div class="col-md-12">
-                                    <strong><i class="text-primary fas fa-clock"></i> Timezone:</strong>
-                                    <span class="">
-                                        {{$trainingEvent?->orgUnit?->Ousetting?->timezone}}
-                                    </span>
-                                </div>
-                            </div>
-
-                            <div class="col-md-2 mt-2">
-                                <strong><i class="text-primary fas fa-chalkboard-teacher"></i> Instructor:</strong>
-                                {{ optional($def->instructor)->fname }} {{ optional($def->instructor)->lname }}
-                            </div>
-
-                            <div class="col-md-2 mt-2">
-                                <strong><i class="text-primary bi bi-card-text"></i> {{ $instLabel }} :</strong>
-                                {{ $instructor_lic_no }}
-                            </div>
-
-                            <div class="col-md-2 mt-2">
-                                <strong><i class="text-primary fas fa-toolbox"></i> Resource:</strong><br>
-                                {{ $def->resource->name ?? 'N/A' }}
-                            </div>
-
-                            <div class="col-md-2 mt-2">
-                                <strong><i class="text-primary fas fa-calendar-day"></i> Date:</strong><br>
-                                {{ date('d-m-Y', strtotime($def->lesson_date)) }}
-                            </div>
-
-                            <div class="col-md-2 mt-2">
-                                <strong><i class="text-primary fas fa-chalkboard-teacher"></i> Lesson Type:</strong><br>
-                                {{ ucfirst($def->deftasks?->subddddLesson?->courseLesson?->lesson_type ?? 'N/A') }}
-
-                            </div>
-
-                            @if(isset($lessonType) && $lessonType != 'groundschool')
-                                <div class="col-md-2 mt-2">
-                                    <strong><i class="text-primary fas fa-plane-departure"></i> Depart:</strong><br>
-                                    {{ strtoupper($def->departure_airfield) ?? 'N/A' }}
-                                </div>
-                            @endif
-
-                            @php 
-                                $lessonType = $def->deftasks?->subddddLesson?->courseLesson?->lesson_type ?? null; 
-                                $isGroundschool = ($lessonType === 'groundschool');
                             @endphp
 
-                            <div class="col-md-2 mt-2">
-                                <strong>
-                                    <i class="text-primary fas fa-clock"></i>
-                                    {{ $isGroundschool ? 'Start Time:' : 'Off blocks:' }}
-                                </strong><br>
-                                {{
-                                    $isGroundschool
-                                        ? ($def->start_time ? date('H:i', strtotime($def->start_time)) : '-')
-                                        : ($def->takeoff_time ? date('H:i', strtotime($def->takeoff_time)) : '-')
-                                }}
-                            </div>
+                            <div class="row mb-4 p-3 border rounded bg-light shadow-sm">
+                                <div class="col-md-6 mb-2 ">
+                                    <strong><i class="text-primary fas fa-book"></i> Lesson Name:</strong>
+                                    <span class="text-primary">{{ $def->lesson_title ?? 'Untitled' }}</span>
+                                </div>
+                                <div class="col-md-6 mb-2" style="text-align:end">
+                                    <button id="edit_custom_lesson" class="btn btn-primary" data-event_id="{{ $def->event_id }}" data-custom-lesson-id="{{$def->id }}" data-lesson-Type="custom">Edit</button>
 
-                            @if(isset($lessonType) && $lessonType != 'groundschool')
+                                    <button id="delete_custom_lesson" class="btn btn-danger" data-event_id="{{ $def->event_id }}" data-custom-lesson-id="{{$def->id }}" data-lesson-Type="custom">Delete</button>
+                                </div>
+
+                                <div class="row mb-3">
+                                    <div class="col-md-12">
+                                        <strong><i class="text-primary fas fa-clock"></i> Timezone:</strong>
+                                        <span class="">
+                                            {{$trainingEvent?->orgUnit?->Ousetting?->timezone}}
+                                        </span>
+                                    </div>
+                                </div>
 
                                 <div class="col-md-2 mt-2">
-                                    <strong><i class="text-primary fas fa-plane-arrival"></i> Arrive:</strong><br>
-                                    {{ strtoupper($def->destination_airfield) ?? 'N/A' }}
+                                    <strong><i class="text-primary fas fa-chalkboard-teacher"></i> Instructor:</strong>
+                                    {{ optional($def->instructor)->fname }} {{ optional($def->instructor)->lname }}
                                 </div>
-                            @endif
 
-                            <div class="col-md-2 mt-2">
-                                <strong>
-                                    <i class="text-primary fas fa-clock"></i>
-                                    {{ $isGroundschool ? 'End Time:' : 'On blocks:' }}
-                                </strong><br>
-                                {{
-                                    $isGroundschool
-                                        ? ($def->end_time ? date('H:i', strtotime($def->end_time)) : '-')
-                                        : ($def->landing_time ? date('H:i', strtotime($def->landing_time)) : '-')
-                                }}
-                            </div>
+                                <div class="col-md-2 mt-2">
+                                    <strong><i class="text-primary bi bi-card-text"></i> {{ $instLabel }} :</strong>
+                                    {{ $instructor_lic_no }}
+                                </div>
+
+                                <div class="col-md-2 mt-2">
+                                    <strong><i class="text-primary fas fa-toolbox"></i> Resource:</strong><br>
+                                    {{ $def->resource->name ?? 'N/A' }}
+                                </div>
+
+                                <div class="col-md-2 mt-2">
+                                    <strong><i class="text-primary fas fa-calendar-day"></i> Date:</strong><br>
+                                    {{ date('d-m-Y', strtotime($def->lesson_date)) }}
+                                </div>
+
+                                <div class="col-md-2 mt-2">
+                                    <strong><i class="text-primary fas fa-chalkboard-teacher"></i> Lesson Type:</strong><br>
+                                    {{ ucfirst($def->deftasks?->subddddLesson?->courseLesson?->lesson_type ?? 'N/A') }}
+
+                                </div>
+
+                                @if(isset($lessonType) && $lessonType != 'groundschool')
+                                    <div class="col-md-2 mt-2">
+                                        <strong><i class="text-primary fas fa-plane-departure"></i> Depart:</strong><br>
+                                        {{ strtoupper($def->departure_airfield) ?? 'N/A' }}
+                                    </div>
+                                @endif
+
+                                @php 
+                                    $lessonType = $def->deftasks?->subddddLesson?->courseLesson?->lesson_type ?? null; 
+                                    $isGroundschool = ($lessonType === 'groundschool');
+                                @endphp
+
+                                <div class="col-md-2 mt-2">
+                                    <strong>
+                                        <i class="text-primary fas fa-clock"></i>
+                                        {{ $isGroundschool ? 'Start Time:' : 'Off blocks:' }}
+                                    </strong><br>
+                                    {{ $def->start_time ? date('H:i', strtotime($def->start_time)) : '-' }}
+                                </div>
+
+                                @if(isset($lessonType) && $lessonType != 'groundschool')
+
+                                    <div class="col-md-2 mt-2">
+                                        <strong><i class="text-primary fas fa-plane-arrival"></i> Arrive:</strong><br>
+                                        {{ strtoupper($def->destination_airfield) ?? 'N/A' }}
+                                    </div>
+                                @endif
+
+                                <div class="col-md-2 mt-2">
+                                    <strong>
+                                        <i class="text-primary fas fa-clock"></i>
+                                        {{ $isGroundschool ? 'End Time:' : 'On blocks:' }}
+                                    </strong><br>
+                                    {{ $def->end_time ? date('H:i', strtotime($def->end_time)) : '-' }}
+                                </div>
 
 
                                 @php
@@ -3144,8 +3407,8 @@
                                     $totalMinutes = 0;
 
                                     // Main lesson duration
-                                    $start = $isGroundschool ? $def->start_time : $def->takeoff_time;
-                                    $end   = $isGroundschool ? $def->end_time : $def->landing_time;
+                                    $start = $def->start_time;
+                                    $end   = $def->end_time;
 
                                     if ($start && $end) {
                                         $startTime = \Carbon\Carbon::parse($start);
@@ -3156,37 +3419,17 @@
 
                                     // Sector durations
                                     foreach ($def->customSectors as $sector) {
+                                        if (
+                                            !empty($sector->start_time) &&
+                                            !empty($sector->end_time) &&
+                                            $sector->start_time !== '00:00:00' &&
+                                            $sector->end_time !== '00:00:00'
+                                        ) {
+                                            $start = strtotime($sector->start_time);
+                                            $end   = strtotime($sector->end_time);
 
-                                        if ($isGroundschool) {
-
-                                            if (
-                                                !empty($sector->start_time) &&
-                                                !empty($sector->end_time) &&
-                                                $sector->start_time !== '00:00:00' &&
-                                                $sector->end_time !== '00:00:00'
-                                            ) {
-                                                $start = strtotime($sector->start_time);
-                                                $end   = strtotime($sector->end_time);
-
-                                                if ($end > $start) {
-                                                    $totalMinutes += ($end - $start) / 60;
-                                                }
-                                            }
-
-                                        } else {
-
-                                            if (
-                                                !empty($sector->takeoff_time) &&
-                                                !empty($sector->landing_time) &&
-                                                $sector->takeoff_time !== '00:00:00' &&
-                                                $sector->landing_time !== '00:00:00'
-                                            ) {
-                                                $takeoff = strtotime($sector->takeoff_time);
-                                                $landing = strtotime($sector->landing_time);
-
-                                                if ($landing > $takeoff) {
-                                                    $totalMinutes += ($landing - $takeoff) / 60;
-                                                }
+                                            if ($end > $start) {
+                                                $totalMinutes += ($end - $start) / 60;
                                             }
                                         }
                                     }
@@ -3196,240 +3439,368 @@
 
                                     $duration = sprintf('%02d:%02d', $hours, $mins);
 
-                                    $tooltipText = $isGroundschool
-                                        ? 'Calculated from Lesson Start/End Time + Sector Start/End Times'
-                                        : 'Calculated from Lesson Takeoff/Landing Time + Sector Takeoff/Landing Times';
+                                    $tooltipText = 'Calculated from Lesson Start/End Time + Sector Start/End Times';
                                 @endphp
-                       
-                            <div class="col-md-2 mt-2">
-                                <strong><i class="text-primary fas fa-hourglass-half"></i> Block Hours:</strong>
-                                <span class="custom-tooltip">
-                                    <i class="fas fa-info-circle text-primary ms-1 fa-xs"
-                                    style="font-size:12px; cursor:help;"></i>
-                                    <span class="tooltip-text">{{ $tooltipText }}</span>
-                                </span>
-                                <br>
-                                {{ $duration }}
-                            </div>
-                                   @if($def->customTime->isNotEmpty())
-                                          <div class="col-md-12 mt-3">
-                                            <strong><i class="text-primary fas fa-clock"></i> Course Tracking :</strong>
-
-                                            <div class="table-responsive mt-2">
-                                                <table class="table table-bordered table-sm" style="border-color: #000 !important;">
-                                                    <thead class="table-light" style="border-color: #000 !important;">
-                                                        <tr>
-                                                            <th class="text-center">Custom Time</th>
-                                                            <th class="text-center">Allotted Time</th>
-                                                            <th class="text-center">Credited Time</th>
-                                                            <th class="text-center">Remaining Time</th>
-                                                        </tr>
-                                                    </thead>
-                                                    <tbody>
-                                                        @foreach($def->customTime as $ct)
-                                                            @php
-                                                                $allotted = (float) ($ct->given_hours ?? $ct->hours ?? 0);
-
-                                                                // credited hours ONLY for this custom_time
-                                                                $creditedHours = (float) $ct->custome_timeCredeted->sum('hours');
-
-                                                                $remaining = max($allotted - $creditedHours, 0);
-                                                                $remainingFormatted = number_format($remaining, 2);
-                                                            @endphp
-
-                                                            <tr class="text-center">
-                                                                <td>{{ $ct->name }}</td>
-                                                                <td>{{ number_format($allotted, 2) }}</td>
-                                                                <td>{{ number_format($creditedHours, 2) }}</td>
-                                                                <td>{{ $remainingFormatted }}</td>
-                                                            </tr>
-                                                        @endforeach
-                                                    </tbody>
-                                                </table>
-                                            </div>
-                                        </div>
-                                    @endif
-
-                            @if(isset($lessonType) && $lessonType != 'groundschool')
-                                @if($def->operation != 0)
+                        
                                 <div class="col-md-2 mt-2">
-                                    <strong><i class="text-primary fas fa-hourglass-half"></i> Operation:</strong><br>
-                                    @if($def->operation == 1)
-                                        PF in LHS
-                                    @elseif($def->operation == 2)
-                                        PM in LHS
-                                    @elseif($def->operation == 3)
-                                        PF in RHS
-                                    @elseif($def->operation == 4)
-                                        PM in RHS
-                                    @else
-                                        N/A
-                                    @endif
+                                    <strong><i class="text-primary fas fa-hourglass-half"></i> Block Hours:</strong>
+                                    <span class="custom-tooltip">
+                                        <i class="fas fa-info-circle text-primary ms-1 fa-xs"
+                                        style="font-size:12px; cursor:help;"></i>
+                                        <span class="tooltip-text">{{ $tooltipText }}</span>
+                                    </span>
+                                    <br>
+                                    {{ $duration }}
                                 </div>
-                                @endif
-                            @endif
-
-                            @if($def->customSectors->isNotEmpty())
-                                <h5 class="details-card-title d-flex justify-content-between align-items-center mt-3"> <strong> Additional Sectors </strong> </h5>
-
-                                @foreach($def->customSectors as $sector)
-                                    <div class="row mb-3 p-3 border rounded bg-light">
-                                        <h6 class="details-card-title d-flex justify-content-between align-items-center"> <strong> Sector {{ $loop->iteration }} : </strong></h6>
-                                        <div class="col-md-2 mt-3">
-                                            <strong><i class="text-primary fas fa-chalkboard-teacher"></i> Instructor:</strong>
-                                            {{ optional($def->instructor)->fname }} {{ optional($def->instructor)->lname }}
-                                        </div>
-
-                                        <div class="col-md-2 mt-3">
-                                            <strong><i class="text-primary bi bi-card-text"></i> {{ $instLabel }} :</strong>
-                                            {{ $instructor_lic_no }}
-                                        </div>
-
-                                        <div class="col-md-2 mt-3">
-                                            <strong><i class="text-primary fas fa-toolbox"></i> Resource:</strong><br>
-                                            {{ $sector->resourceData->name ?? 'N/A' }}
-                                        </div>
-
-                                        <div class="col-md-2 mt-3">
-                                            <strong><i class="text-primary fas fa-calendar-day"></i> Date:</strong><br>
-
-                                            @if(!empty($sector->lesson_date))
-                                            {{ date('d-m-Y', strtotime($sector->lesson_date)) }}
-                                            @endif
-                                        </div>
-
-                                        @php 
-                                            $lessonType = $def->deftasks?->subddddLesson?->courseLesson?->lesson_type ?? null; 
-                                            $isGroundschool = ($lessonType === 'groundschool');
-                                        @endphp
-                                                                                
-                                        <div class="col-md-2 mt-3">
-                                            <strong>
-                                                <i class="text-primary fas fa-clock"></i>
-                                                {{ $isGroundschool ? 'Start Time:' : 'Off blocks:' }}
-                                            </strong><br>
-                                            @if(!empty($sector->start_time) && $sector->start_time !== '00:00:00')
-                                                {{ date('H:i', strtotime($sector->start_time)) }}
-                                            @else
-                                                -
-                                            @endif
-                                        </div>
-                                        <div class="col-md-2 mt-3">
-                                            <strong>
-                                                <i class="text-primary fas fa-clock"></i>
-                                                {{ $isGroundschool ? 'End Time:' : 'On blocks:' }}
-                                            </strong><br>
-                                            @if(!empty($sector->end_time) && $sector->end_time !== '00:00:00')
-                                                {{ date('H:i', strtotime($sector->end_time)) }}
-                                            @else
-                                                -
-                                            @endif
-                                        </div>
-
-                                        @if(isset($lessonType) && $lessonType != 'groundschool')
-                                            <div class="col-md-2 mt-3">
-                                                <strong><i class="text-primary fas fa-plane-departure"></i> Depart:</strong><br>
-                                                {{ $sector->departure_airfield ?? 'N/A' }}
-                                            </div>
-
-                                            <div class="col-md-2 mt-3">
-                                                <strong><i class="text-primary fas fa-plane-arrival"></i> Arrive:</strong><br>
-                                                {{ $sector->destination_airfield ?? 'N/A' }}
-                                            </div>
-                                        @endif
-
-                                        <div class="col-md-2 mt-3">
-                                            @php $lessonType = $def->deftasks?->subddddLesson?->courseLesson?->lesson_type ?? null; @endphp
-                                            <strong><i class="text-primary fas fa-chalkboard-teacher"></i> Lesson Type:</strong><br>
-                                            {{ ucfirst($lessonType) ?? 'N/A' }}
-                                        </div>
+                                
+                                @if($lessonType !== 'groundschool')
+                                    <div class="col-md-2 mt-2">
+                                        <strong>
+                                            <i class="text-primary fas fa-clock"></i>
+                                            Takeoff Time
+                                        </strong><br>
                                         @php
-                                            $totalMinutes = 0;
+                                            $takeofftime = $def->takeoff_time;
+                                        @endphp
 
-                                            if(!empty($sector->start_time) && !empty($sector->end_time) && 
-                                            $sector->start_time !== '00:00:00' && $sector->end_time !== '00:00:00') 
+                                        @if(!empty($takeofftime) && $takeofftime !== '00:00:00')
+                                            {{ date('H:i', strtotime($takeofftime)) }}
+                                        @elseif($takeofftime === '00:00:00')
+                                            {{ $takeofftime }}
+                                        @else
+                                            -
+                                        @endif
+                                    </div>
+
+                                    <div class="col-md-2 mt-2">
+                                        <strong>
+                                            <i class="text-primary fas fa-clock"></i>
+                                            Landing Time
+                                        </strong><br>
+                                        @php
+                                            $landingtime = $def->landing_time;
+                                        @endphp
+
+                                        @if(!empty($landingtime) && $landingtime !== '00:00:00')
+                                            {{ date('H:i', strtotime($landingtime)) }}
+                                        @elseif($landingtime === '00:00:00')
+                                            {{ $landingtime }}
+                                        @else
+                                            -
+                                        @endif
+                                    </div>
+
+                                    @php
+                                        if (!$isGroundschool) {
+                                            $totalflightMinutes = 0;
+
+                                            if(!empty($def->takeoff_time) && !empty($def->landing_time) && 
+                                            $def->takeoff_time !== '00:00:00' && $def->landing_time !== '00:00:00') 
                                             {
-                                                $start = strtotime($sector->start_time);
-                                                $end   = strtotime($sector->end_time);
+                                                $start = strtotime($def->takeoff_time);
+                                                $end   = strtotime($def->landing_time);
 
                                                 if($end > $start) {
-                                                    $diffMin = ($end - $start) / 60;
-                                                    $totalMinutes += $diffMin;
+                                                    $diffMin = ($end - $start) / 60; // difference in minutes
+                                                    $totalflightMinutes += $diffMin;
                                                 }
                                             }
                                             
-                                            $sectorfinalHours = floor($totalMinutes / 60);
-                                            $sectorfinalMinutes = $totalMinutes % 60;
-                                            $sectorfinalTime = sprintf('%02d:%02d', $sectorfinalHours, $sectorfinalMinutes);
-                                        @endphp
-                                        <div class="col-md-2 mt-3">
-                                            <strong><i class="text-primary fas fa-hourglass-half"></i> Block Hours:</strong><br>
-                                            {{ $sectorfinalTime }}
-                                        </div>
+                                            $deffinalFlightHours = floor($totalflightMinutes / 60);
+                                            $deffinalFLightMinutes = $totalflightMinutes % 60;
+                                            $deffinalFlightTime = sprintf('%02d:%02d', $deffinalFlightHours, $deffinalFLightMinutes);
+                                        }
 
-                                        @if(isset($lessonType) && $lessonType != 'groundschool')
-                                            <!-- // Operation -->
-                                            @if(!empty($lesson->operation1))
+                                    @endphp
+
+                                    <div class="col-md-2 mt-2">
+                                        <strong><i class="text-primary fas fa-hourglass-half"></i> Flight Hours:</strong><br>
+                                        {{ $deffinalFlightTime }}
+                                    </div>
+                                @endif
+                                
+                                @if($def->customTime->isNotEmpty())
+                                    <div class="col-md-12 mt-3">
+                                        <strong><i class="text-primary fas fa-clock"></i> Course Tracking :</strong>
+
+                                        <div class="table-responsive mt-2">
+                                            <table class="table table-bordered table-sm" style="border-color: #000 !important;">
+                                                <thead class="table-light" style="border-color: #000 !important;">
+                                                    <tr>
+                                                        <th class="text-center">Custom Time</th>
+                                                        <th class="text-center">Allotted Time</th>
+                                                        <th class="text-center">Credited Time</th>
+                                                        <th class="text-center">Remaining Time</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    @foreach($def->customTime as $ct)
+                                                        @php
+                                                            $allotted = (float) ($ct->given_hours ?? $ct->hours ?? 0);
+
+                                                            // credited hours ONLY for this custom_time
+                                                            $creditedHours = (float) $ct->custome_timeCredeted->sum('hours');
+
+                                                            $remaining = max($allotted - $creditedHours, 0);
+                                                            $remainingFormatted = number_format($remaining, 2);
+                                                        @endphp
+
+                                                        <tr class="text-center">
+                                                            <td>{{ $ct->name }}</td>
+                                                            <td>{{ number_format($allotted, 2) }}</td>
+                                                            <td>{{ number_format($creditedHours, 2) }}</td>
+                                                            <td>{{ $remainingFormatted }}</td>
+                                                        </tr>
+                                                    @endforeach
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                @endif
+
+                                @if(isset($lessonType) && $lessonType != 'groundschool')
+                                    @if($def->operation != 0)
+                                    <div class="col-md-2 mt-2">
+                                        <strong><i class="text-primary fas fa-hourglass-half"></i> Operation:</strong><br>
+                                        @if($def->operation == 1)
+                                            PF in LHS
+                                        @elseif($def->operation == 2)
+                                            PM in LHS
+                                        @elseif($def->operation == 3)
+                                            PF in RHS
+                                        @elseif($def->operation == 4)
+                                            PM in RHS
+                                        @else
+                                            N/A
+                                        @endif
+                                    </div>
+                                    @endif
+                                @endif
+
+                                @if($def->customSectors->isNotEmpty())
+                                    <h5 class="details-card-title d-flex justify-content-between align-items-center mt-3"> <strong> Additional Sectors </strong> </h5>
+
+                                    @foreach($def->customSectors as $sector)
+                                        <div class="row mb-3 p-3 border rounded bg-light">
+                                            <h6 class="details-card-title d-flex justify-content-between align-items-center"> <strong> Sector {{ $loop->iteration }} : </strong></h6>
+                                            <div class="col-md-2 mt-3">
+                                                <strong><i class="text-primary fas fa-chalkboard-teacher"></i> Instructor:</strong>
+                                                {{ optional($def->instructor)->fname }} {{ optional($def->instructor)->lname }}
+                                            </div>
+
+                                            <div class="col-md-2 mt-3">
+                                                <strong><i class="text-primary bi bi-card-text"></i> {{ $instLabel }} :</strong>
+                                                {{ $instructor_lic_no }}
+                                            </div>
+
+                                            <div class="col-md-2 mt-3">
+                                                <strong><i class="text-primary fas fa-toolbox"></i> Resource:</strong><br>
+                                                {{ $sector->resourceData->name ?? 'N/A' }}
+                                            </div>
+
+                                            <div class="col-md-2 mt-3">
+                                                <strong><i class="text-primary fas fa-calendar-day"></i> Date:</strong><br>
+
+                                                @if(!empty($sector->lesson_date))
+                                                {{ date('d-m-Y', strtotime($sector->lesson_date)) }}
+                                                @endif
+                                            </div>
+
+                                            @php 
+                                                $lessonType = $def->deftasks?->subddddLesson?->courseLesson?->lesson_type ?? null; 
+                                                $isGroundschool = ($lessonType === 'groundschool');
+                                            @endphp
+                                                                                    
+                                            <div class="col-md-2 mt-3">
+                                                <strong>
+                                                    <i class="text-primary fas fa-clock"></i>
+                                                    {{ $isGroundschool ? 'Start Time:' : 'Off blocks:' }}
+                                                </strong><br>
+                                                @if(!empty($sector->start_time) && $sector->start_time !== '00:00:00')
+                                                    {{ date('H:i', strtotime($sector->start_time)) }}
+                                                @else
+                                                    -
+                                                @endif
+                                            </div>
+                                            <div class="col-md-2 mt-3">
+                                                <strong>
+                                                    <i class="text-primary fas fa-clock"></i>
+                                                    {{ $isGroundschool ? 'End Time:' : 'On blocks:' }}
+                                                </strong><br>
+                                                @if(!empty($sector->end_time) && $sector->end_time !== '00:00:00')
+                                                    {{ date('H:i', strtotime($sector->end_time)) }}
+                                                @else
+                                                    -
+                                                @endif
+                                            </div>
+
+                                            @if(isset($lessonType) && $lessonType != 'groundschool')
                                                 <div class="col-md-2 mt-3">
-                                                    <strong><i class="text-primary fas fa-hourglass-half"></i> Operation:</strong><br>
-                                                    @if($sector->operation == 1)
-                                                        PF in LHS
-                                                    @elseif($sector->operation == 2)
-                                                        PM in LHS
-                                                    @elseif($sector->operation == 3)
-                                                        PF in RHS
-                                                    @elseif($sector->operation == 4)
-                                                        PM in RHS
-                                                    @endif
+                                                    <strong><i class="text-primary fas fa-plane-departure"></i> Depart:</strong><br>
+                                                    {{ $sector->departure_airfield ?? 'N/A' }}
+                                                </div>
+
+                                                <div class="col-md-2 mt-3">
+                                                    <strong><i class="text-primary fas fa-plane-arrival"></i> Arrive:</strong><br>
+                                                    {{ $sector->destination_airfield ?? 'N/A' }}
                                                 </div>
                                             @endif
-                                        @endif
-                                    </div>
-                                @endforeach
 
-                            @endif
-                            <!-- {{-- Lesson Summary --}} -->
-                            @if(!empty($def->lesson_summary))
-                            <div class="col-md-12 mt-3">
-                                <div class="card shadow-sm border-0">
-                                    <div class="card-header bg-primary text-white py-0">
-                                        <i class="text-primary bi bi-journal-text me-2"></i> Lesson Summary
-                                    </div>
-                                    <div class="card-body">
-                                        @if(!empty($def->lesson_summary))
-                                        <p class="mb-0 text-muted">
-                                            {{ $def->lesson_summary }}
-                                        </p>
-                                        @else
-                                        <p class="mb-0 text-muted fst-italic">No Lesson summary provided.</p>
-                                        @endif
+                                            <div class="col-md-2 mt-3">
+                                                @php $lessonType = $def->deftasks?->subddddLesson?->courseLesson?->lesson_type ?? null; @endphp
+                                                <strong><i class="text-primary fas fa-chalkboard-teacher"></i> Lesson Type:</strong><br>
+                                                {{ ucfirst($lessonType) ?? 'N/A' }}
+                                            </div>
+                                            @php
+                                                $totalMinutes = 0;
+
+                                                if(!empty($sector->start_time) && !empty($sector->end_time) && 
+                                                $sector->start_time !== '00:00:00' && $sector->end_time !== '00:00:00') 
+                                                {
+                                                    $start = strtotime($sector->start_time);
+                                                    $end   = strtotime($sector->end_time);
+
+                                                    if($end > $start) {
+                                                        $diffMin = ($end - $start) / 60;
+                                                        $totalMinutes += $diffMin;
+                                                    }
+                                                }
+                                                
+                                                $sectorfinalHours = floor($totalMinutes / 60);
+                                                $sectorfinalMinutes = $totalMinutes % 60;
+                                                $sectorfinalTime = sprintf('%02d:%02d', $sectorfinalHours, $sectorfinalMinutes);
+                                            @endphp
+                                            <div class="col-md-2 mt-3">
+                                                <strong><i class="text-primary fas fa-hourglass-half"></i> Block Hours:</strong><br>
+                                                {{ $sectorfinalTime }}
+                                            </div>
+
+                                            @if(isset($lessonType) && $lessonType != 'groundschool')
+                                                <!-- // Operation -->
+                                                @if(!empty($lesson->operation1))
+                                                    <div class="col-md-2 mt-3">
+                                                        <strong><i class="text-primary fas fa-hourglass-half"></i> Operation:</strong><br>
+                                                        @if($sector->operation == 1)
+                                                            PF in LHS
+                                                        @elseif($sector->operation == 2)
+                                                            PM in LHS
+                                                        @elseif($sector->operation == 3)
+                                                            PF in RHS
+                                                        @elseif($sector->operation == 4)
+                                                            PM in RHS
+                                                        @endif
+                                                    </div>
+                                                @endif
+                                            @endif
+
+                                            @if($lessonType !== 'groundschool')
+                                                <div class="col-md-2 mt-3">
+                                                    <strong>
+                                                        <i class="text-primary fas fa-clock"></i>
+                                                        Takeoff Time
+                                                    </strong><br>
+                                                    @php
+                                                        $takeofftime = $sector->takeoff_time;
+                                                    @endphp
+
+                                                    @if(!empty($takeofftime) && $takeofftime !== '00:00:00')
+                                                        {{ date('H:i', strtotime($takeofftime)) }}
+                                                    @elseif($takeofftime === '00:00:00')
+                                                        {{ $takeofftime }}
+                                                    @else
+                                                        -
+                                                    @endif
+                                                </div>
+
+                                                <div class="col-md-2 mt-3">
+                                                    <strong>
+                                                        <i class="text-primary fas fa-clock"></i>
+                                                        Landing Time
+                                                    </strong><br>
+                                                    @php
+                                                        $landingtime = $sector->landing_time;
+                                                    @endphp
+
+                                                    @if(!empty($landingtime) && $landingtime !== '00:00:00')
+                                                        {{ date('H:i', strtotime($landingtime)) }}
+                                                    @elseif($landingtime === '00:00:00')
+                                                        {{ $landingtime }}
+                                                    @else
+                                                        -
+                                                    @endif
+                                                </div>
+
+                                                @php
+                                                    $totalMinutes = 0;
+
+                                                    if(!empty($sector->takeoff_time) && !empty($sector->landing_time) && 
+                                                    $sector->takeoff_time !== '00:00:00' && $sector->landing_time !== '00:00:00') 
+                                                    {
+                                                        $start = strtotime($sector->takeoff_time);
+                                                        $end   = strtotime($sector->landing_time);
+
+                                                        if($end > $start) {
+                                                            $diffMin = ($end - $start) / 60;
+                                                            $totalMinutes += $diffMin;
+                                                        }
+                                                    }
+                                                    
+                                                    $sectorfinalHours = floor($totalMinutes / 60);
+                                                    $sectorfinalMinutes = $totalMinutes % 60;
+                                                    $deffsectorinalFlightTime = sprintf('%02d:%02d', $sectorfinalHours, $sectorfinalMinutes);
+                                                @endphp
+
+                                                <div class="col-md-2 mt-3">
+                                                    <strong><i class="text-primary fas fa-hourglass-half"></i> Flight Hours:</strong><br>
+                                                    {{ $deffsectorinalFlightTime }}
+                                                </div>
+                                            @endif
+                                        </div>
+                                    @endforeach
+
+                                @endif
+                                <!-- {{-- Lesson Summary --}} -->
+                                @if(!empty($def->lesson_summary))
+                                <div class="col-md-12 mt-3">
+                                    <div class="card shadow-sm border-0">
+                                        <div class="card-header bg-primary text-white py-0">
+                                            <i class="text-primary bi bi-journal-text me-2"></i> Lesson Summary
+                                        </div>
+                                        <div class="card-body">
+                                            @if(!empty($def->lesson_summary))
+                                            <p class="mb-0 text-muted">
+                                                {{ $def->lesson_summary }}
+                                            </p>
+                                            @else
+                                            <p class="mb-0 text-muted fst-italic">No Lesson summary provided.</p>
+                                            @endif
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                            @endif
+                                @endif
 
-                            <!-- //  Instructor Comment -->
+                                <!-- //  Instructor Comment -->
 
-                            @if(!empty($def->instructor_comment))
-                            <div class="col-md-12 mt-3">
-                                <div class="card shadow-sm border-0">
-                                    <div class="card-header bg-primary text-white py-0">
-                                        <i class="text-primary bi bi-journal-text me-2"></i> Instructor Comment
-                                    </div>
-                                    <div class="card-body">
-                                        @if(!empty($def->instructor_comment ))
-                                        <p class="mb-0 text-muted">
-                                            {{ $def->instructor_comment }}
-                                        </p>
-                                        @else
-                                        <p class="mb-0 text-muted fst-italic">No Instructor Comment provided.</p>
-                                        @endif
+                                @if(!empty($def->instructor_comment))
+                                <div class="col-md-12 mt-3">
+                                    <div class="card shadow-sm border-0">
+                                        <div class="card-header bg-primary text-white py-0">
+                                            <i class="text-primary bi bi-journal-text me-2"></i> Instructor Comment
+                                        </div>
+                                        <div class="card-body">
+                                            @if(!empty($def->instructor_comment ))
+                                            <p class="mb-0 text-muted">
+                                                {{ $def->instructor_comment }}
+                                            </p>
+                                            @else
+                                            <p class="mb-0 text-muted fst-italic">No Instructor Comment provided.</p>
+                                            @endif
+                                        </div>
                                     </div>
                                 </div>
+                                @endif
                             </div>
-                            @endif
-                        </div>
-                        @endforeach
+                            @endforeach
                         @endif
 
                         {{-- Deferred Items(fallback) --}}
@@ -3693,7 +4064,6 @@
                                 </form>
                             </div>
                         </div>
-
                         {{-- Deferred Lesson Modal End --}}
 
                         {{-- Normal Lesson Modal Start --}}
@@ -3738,7 +4108,6 @@
                                 </form>
                             </div>
                         </div>
-
                         {{-- Normal Lesson Modal End --}}
 
 
@@ -3915,7 +4284,6 @@
                                 </form>
                             </div>
                         </div>
-
                         <!-- -- Edit Deffered Lesson -- -->
 
                         @if($trainingFeedbacks && $trainingFeedbacks->isNotEmpty())
@@ -4411,7 +4779,7 @@
                         </div>
 
                     @endif
-            </div>
+                </div>
             </div>
             <div class="tab-pane fade" id="student-{{ $student->id ?? '' }}" role="tabpanel" aria-labelledby="student-tab-{{ $student->id ?? '' }}">
                 <form method="POST" class="overallAssessmentForm" data-user-id="{{ $student->id ?? '' }}">

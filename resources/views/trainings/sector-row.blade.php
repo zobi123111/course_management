@@ -79,28 +79,28 @@
 
         <div class="col-md-3">
             <label class="form-label start-label">Start</label>
-            <input type="time" class="form-control editable" 
+            <input type="text" class="form-control editable timepicker" 
                    name="sectors[{{ $index }}][start_time]" 
                    value="{{ $sector->start_time ?? '' }}" disabled>
         </div>
 
         <div class="col-md-3">
             <label class="form-label">Takeoff</label>
-            <input type="time" class="form-control editable" 
+            <input type="text" class="form-control editable timepicker" 
                    name="sectors[{{ $index }}][takeoff_time]" 
                    value="{{ $sector->takeoff_time ?? '' }}" disabled>
         </div>
 
         <div class="col-md-3">
             <label class="form-label">Landing</label>
-            <input type="time" class="form-control editable" 
+            <input type="text" class="form-control editable timepicker" 
                    name="sectors[{{ $index }}][landing_time]" 
                    value="{{ $sector->landing_time ?? '' }}" disabled>
         </div>
 
         <div class="col-md-3">
             <label class="form-label end-label">Finish</label>
-            <input type="time" class="form-control editable" 
+            <input type="text" class="form-control editable timepicker" 
                    name="sectors[{{ $index }}][end_time]" 
                    value="{{ $sector->end_time ?? '' }}" disabled>
         </div>

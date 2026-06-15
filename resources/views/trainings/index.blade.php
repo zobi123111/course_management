@@ -1436,12 +1436,12 @@ $(document).ready(function() {
                                 <div id="lesson_data_${lessonId}_lesson_date_error" class="text-danger error_e"></div>
                             </div>
                             <div class="col-md-4">
-                                <label class="form-label">Start Time<span class="text-danger">*</span></label>
+                                <label class="form-label">Start Time (Off Block)<span class="text-danger">*</span></label>
                                 <input type="time" name="lesson_data[${lessonId}][start_time]" class="form-control lesson-start-time" data-lesson-id="${lessonId}">
                                 <div id="lesson_data_${lessonId}_start_time_error" class="text-danger error_e"></div>
                             </div>
                             <div class="col-md-4">
-                                <label class="form-label">End Time<span class="text-danger">*</span></label>
+                                <label class="form-label">End Time (On Block)<span class="text-danger">*</span></label>
                                 <input type="time" name="lesson_data[${lessonId}][end_time]" class="form-control lesson-end-time" data-lesson-id="${lessonId}">
                                 <div id="lesson_data_${lessonId}_end_time_error" class="text-danger error_e"></div>
                             </div>
@@ -1686,12 +1686,12 @@ $(document).ready(function() {
                         <div id="lesson_data_${currentIndex}_lesson_date${errorSuffix}" class="text-danger error_e"></div>
                     </div>
                     <div class="col-md-4 start-time-block">
-                        <label class="form-label">Start Time${isFirstLesson ? '<span class="text-danger">*</span>' : ''}</label>
+                        <label class="form-label">Start Time (Off Block) ${isFirstLesson ? '<span class="text-danger">*</span>' : ''}</label>
                         <input type="time" name="lesson_data[${currentIndex}][start_time]" class="form-control lesson-start-time" value="${start_time}" data-lesson-id="${currentIndex}">
                         <div id="lesson_data_${currentIndex}_start_time${errorSuffix}" class="text-danger error_e"></div>
                     </div>
                     <div class="col-md-4 end-time-block">
-                        <label class="form-label">End Time${isFirstLesson ? '<span class="text-danger">*</span>' : ''}</label>
+                        <label class="form-label">End Time (on Block) ${isFirstLesson ? '<span class="text-danger">*</span>' : ''}</label>
                         <input type="time" name="lesson_data[${currentIndex}][end_time]" class="form-control lesson-end-time" value="${end_time}" data-lesson-id="${currentIndex}">
                         <div id="lesson_data_${currentIndex}_end_time${errorSuffix}" class="text-danger error_e"></div>
                     </div>
