@@ -1764,6 +1764,10 @@
                             @php
                                 $lessons = $trainingEvent->eventLessons;
                             @endphp
+                        @else
+                            @php
+                                $lessons = collect();
+                            @endphp
                         @endif
 
                         @php
