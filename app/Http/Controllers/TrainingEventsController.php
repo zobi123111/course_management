@@ -6261,27 +6261,56 @@ class TrainingEventsController extends Controller
         $end = $request->end_time ?? null;
         $creditMinutes = 0;
         
-        if ($start && $end) {
+        // if ($start && $end) {
+        //     try {
+        //         $startTime = \Carbon\Carbon::createFromFormat('H:i', $start);
+        //         $endTime = \Carbon\Carbon::createFromFormat('H:i', $end);
+
+        //         if ($endTime->lessThan($startTime)) {
+        //             $endTime->addDay();
+        //         }
+
+        //         $creditMinutes = $startTime->diffInMinutes($endTime);
+        //     } catch (\Exception $e) {
+        //         $creditMinutes = 0;
+        //     }
+        // }
+        
+
+        // if($request->has('hours_credited')){
+        //     $credit = $request->hours_credited;
+        // }
+        // else{
+        //     $credit = $creditMinutes;
+        // }
+
+        if (!empty($start) && !empty($end)) {
             try {
                 $startTime = \Carbon\Carbon::createFromFormat('H:i', $start);
-                $endTime = \Carbon\Carbon::createFromFormat('H:i', $end);
+                $endTime   = \Carbon\Carbon::createFromFormat('H:i', $end);
 
-                if ($endTime->lessThan($startTime)) {
+                // Handle overnight events
+                if ($endTime->lt($startTime)) {
                     $endTime->addDay();
                 }
 
                 $creditMinutes = $startTime->diffInMinutes($endTime);
+
             } catch (\Exception $e) {
                 $creditMinutes = 0;
             }
         }
-        
 
-        if($request->has('hours_credited')){
+        if (
+            $request->filled('hours_credited') &&
+            $request->hours_credited !== '00:00:00'
+        ) {
             $credit = $request->hours_credited;
-        }
-        else{
-            $credit = $creditMinutes;
+        } else {
+            $hours  = floor($creditMinutes / 60);
+            $minutes = $creditMinutes % 60;
+
+            $credit = sprintf('%02d:%02d:00', $hours, $minutes);
         }
 
         if($request->has('lessontype')){
