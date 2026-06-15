@@ -4267,6 +4267,7 @@
                                 noCalendar: true,
                                 dateFormat: 'H:i',
                                 time_24hr: true,
+                                minuteIncrement: 1,
                                 allowInput: true
                             });
                         }
@@ -4869,6 +4870,7 @@
                     noCalendar: true,
                     dateFormat: 'H:i',
                     time_24hr: true,
+                    minuteIncrement: 1,
                     allowInput: true
                 });
             }
