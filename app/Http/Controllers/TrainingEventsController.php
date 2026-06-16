@@ -3457,8 +3457,62 @@ class TrainingEventsController extends Controller
             //    formatSeconds($TotalBlockCredited),
             // );
         // Add sector block time
-        $blockCredited = $totalSectorblockTime + $TotalBlockCredited;
+
+
+        $deferredLessons = $event->defLessons->where('lesson_type', 'deferred');
+        $customLessons   = $event->defLessons->where('lesson_type', 'custom');
+        $lessonTime = 0;
+
+        /* Event Lessons */
+        foreach ($event->eventLessons as $lesson) {
+
+            if (($lesson->lesson_type ?? null) == 'groundschool') {
+                continue;
+            }
+
+            $starttime = strtotime($lesson->start_time);
+            $endtime   = strtotime($lesson->end_time);
+
+            if ($starttime && $endtime && $endtime > $starttime) {
+                $lessonTime += ($endtime - $starttime);
+            }
+        }
+
+        /* Deferred Lessons */
+        if (isset($deferredLessons) && $deferredLessons->isNotEmpty()) {
+            foreach ($deferredLessons as $defLesson) {
+
+                if (($defLesson->deftasks?->subddddLesson?->courseLesson?->lesson_type ?? null) == 'groundschool') {
+                    continue;
+                }
+
+                $starttime = strtotime($defLesson->start_time);
+                $endtime   = strtotime($defLesson->end_time);
+
+                if ($starttime && $endtime && $endtime > $starttime) {
+                    $lessonTime += ($endtime - $starttime);
+                }
+            }
+        }
+
+        /* Custom Lessons */
+        if (isset($customLessons) && $customLessons->isNotEmpty()) {
+            foreach ($customLessons as $customLesson) {
+
+                if (($customLesson->deftasks?->subddddLesson?->courseLesson?->lesson_type ?? null) == 'groundschool') {
+                    continue;
+                }
+
+                $starttime = strtotime($customLesson->start_time);
+                $endtime   = strtotime($customLesson->end_time);
+
+                if ($starttime && $endtime && $endtime > $starttime) {
+                    $lessonTime += ($endtime - $starttime);
+                }
+            }
+        }
         
+        $blockCredited = $totalSectorblockTime + $lessonTime;
         // Duration (hours * 3600)
         $blockDuration = $event->course->duration_value * 3600;
         $eventtype = $event->course->duration_type;
