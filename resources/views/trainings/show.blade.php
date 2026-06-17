@@ -4522,7 +4522,7 @@
                                         <input type="hidden" name="tg_lesson_id[]" value="{{ $eventLesson->id }}">
                                         <h5 class="lesson-header mt-3">
                                             {{ $lesson->lesson_title ?? 'Untitled Lesson' }}
-                                            (Duration: {{ $hours_credited }} / {{ number_format($duration, 2) }} hrs)
+                                            (Duration: {{ $hours_credited }} hrs)
 
                                             @if($isLocked && !empty($groupedLogs[$eventLesson->lesson_id]))
                                             @php
