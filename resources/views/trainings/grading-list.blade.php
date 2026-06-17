@@ -148,7 +148,7 @@
                                             <br><small class="text-muted">
                                                 <i class="bi bi-person-video3 me-1"></i>Instructor: {{ $meta->instructor?->fname }} {{ $meta->instructor?->lname }} |
                                                 <i class="bi bi-calendar-date me-1"></i>Date: {{ date('M d, Y', strtotime($meta->lesson_date)) }} |
-                                                <i class="bi bi-clock me-1"></i>Time: {{ date('h:i A', strtotime($meta->start_time)) }} - {{ date('h:i A', strtotime($meta->end_time)) }}
+                                                <i class="bi bi-clock me-1"></i>Time: {{ date('H:i', strtotime($meta->start_time)) }} - {{ date('H:i', strtotime($meta->end_time)) }}
                                             </small>
                                             @endif
                                         </div>
@@ -160,7 +160,7 @@
                                                     <small class="text-muted">
                                                         <i class="bi bi-person-video3 me-1"></i>Instructor: {{ $meta->instructor?->fname }} {{ $meta->instructor?->lname }} |
                                                         <i class="bi bi-calendar-date me-1"></i>Date: {{ date('M d, Y', strtotime($sector->lesson_date)) }} |
-                                                        <i class="bi bi-clock me-1"></i>Time: {{ date('h:i A', strtotime($sector->start_time)) }} - {{ date('h:i A', strtotime($sector->end_time)) }}
+                                                        <i class="bi bi-clock me-1"></i>Time: {{ date('H:i', strtotime($sector->start_time)) }} - {{ date('H:i', strtotime($sector->end_time)) }}
                                                     </small>
                                                 @endforeach
                                             @endif
