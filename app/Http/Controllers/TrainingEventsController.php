@@ -4063,6 +4063,25 @@ class TrainingEventsController extends Controller
             }
         }
 
+        $deferredLessons = $event->defLessons->where('lesson_type', 'deferred');
+        $customLessons   = $event->defLessons->where('lesson_type', 'custom');
+        $lessonTime = 0;
+
+        /* Event Lessons */
+        foreach ($event->eventLessons as $lesson) {
+
+            if (($lesson->lesson_type ?? null) == 'groundschool') {
+                continue;
+            }
+
+            $starttime = strtotime($lesson->start_time);
+            $endtime   = strtotime($lesson->end_time);
+
+            if ($starttime && $endtime && $endtime > $starttime) {
+                $lessonTime += ($endtime - $starttime);
+            }
+        }
+
         /* ----------------------------
             FINAL FLIGHT TIME
         ---------------------------- */
@@ -4073,15 +4092,15 @@ class TrainingEventsController extends Controller
         
 
         // Total Block Credited (blade logic)
-        $TotalBlockCredited =
-            // $lessonFlightTime +
-            $totals['flight'] +
-            $totals['customDuration'] +
-            // $sectorFlightTime +
-            $totals['lessonCreditedTime'];
+        // $TotalBlockCredited =
+        //     // $lessonFlightTime +
+        //     $totals['flight'] +
+        //     $totals['customDuration'] +
+        //     // $sectorFlightTime +
+        //     $totals['lessonCreditedTime'];
 
         // Add sector block time
-        $blockCredited = $totalSectorblockTime + $TotalBlockCredited;
+        $blockCredited = $totalSectorblockTime + $lessonTime;
         
         // Duration (hours * 3600)
         $blockDuration = $event->course->duration_value * 3600;
