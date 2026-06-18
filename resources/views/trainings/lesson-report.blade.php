@@ -97,8 +97,10 @@
                         <strong>Arrival :</strong> {{ $eventLesson?->destination_airfield ?? 'N/A' }}<br>
                         <strong>Total Blocks:</strong> {{ $blockCreditedFormatted }}<br>
                         <strong>Total Flight:</strong> {{ $totalFlightTimeFormatted }}<br>
-                        <strong>Off-Blocks:</strong>{{ \Carbon\Carbon::parse($eventLesson->takeoff_time)->format('H:i') }} <br>
-                        <strong>On-Blocks:</strong> {{ \Carbon\Carbon::parse($eventLesson->landing_time)->format('H:i') }} <br>
+                        <strong>Off-Blocks:</strong>{{ \Carbon\Carbon::parse($eventLesson->start_time)->format('H:i') }} <br>
+                        <strong>On-Blocks:</strong> {{ \Carbon\Carbon::parse($eventLesson->end_time)->format('H:i') }} <br>
+                        <strong>Takeoff Time:</strong>{{ \Carbon\Carbon::parse($eventLesson->takeoff_time)->format('H:i') }} <br>
+                        <strong>Landing Time:</strong> {{ \Carbon\Carbon::parse($eventLesson->landing_time)->format('H:i') }} <br>
                     @else
                         <strong>Start Time:</strong> {{ \Carbon\Carbon::parse($eventLesson->start_time)->format('H:i') }}<br>
                         <strong>End Time:</strong> {{ \Carbon\Carbon::parse($eventLesson->end_time)->format('H:i') }}<br>
