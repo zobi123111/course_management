@@ -540,9 +540,10 @@
                                 <p class="mb-0"><strong>Class:</strong> {{ $document->medical_class_2 }}</p>
                                 <p class="mb-0"><strong>Issue Date:</strong> {{ $document->medical_issuedate_2 }}</p>
                                 <p class="mb-0"><strong>Expiry Date:</strong> {{ $document->medical_expirydate_2 }}</p>
+                                <a href="{{ Storage::url($document->medical_file_2) }}" class="btn btn-outline-danger btn-sm" target="_blank">View File</a>
 
                                 @if($user->medical_2_adminRequired == 1 && $document->medical_file_2)
-                                <a href="{{ Storage::url($document->medical_file_2) }}" class="btn btn-outline-danger btn-sm" target="_blank">View File</a>
+                             
 
                                 <div class="form-check form-switch mb-0">
                                     <input class="form-check-input verify-toggle" type="checkbox" id="medical2_verify"
