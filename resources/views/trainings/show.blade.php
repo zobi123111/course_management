@@ -1,4 +1,4 @@
-    @section('title', 'Training Event View')
+@section('title', 'Training Event View')
     @section('sub-title', 'Training Event')
     @extends('layout.app')
     @section('content')
@@ -2010,7 +2010,7 @@
                                         </div>
                                     @endif
 
-                                    @php
+                                    <?php
                                         if ($isGroundschool) {
 
                                             $credited = $lesson->hours_credited ?? '00:00';
@@ -2018,21 +2018,21 @@
                                             list($ch, $cm) = explode(':', $credited);
                                             $totalMinutes = ($ch * 60) + $cm;
 
-                                            foreach ($lesson->sectors as $sector) {
-                                                if (
-                                                    !empty($sector->start_time) &&
-                                                    !empty($sector->end_time) &&
-                                                    $sector->start_time !== '00:00:00' &&
-                                                    $sector->end_time !== '00:00:00'
-                                                ) {
-                                                    $start = strtotime($sector->start_time);
-                                                    $end   = strtotime($sector->end_time);
+                                            // foreach ($lesson->sectors as $sector) {
+                                            //     if (
+                                            //         !empty($sector->start_time) &&
+                                            //         !empty($sector->end_time) &&
+                                            //         $sector->start_time !== '00:00:00' &&
+                                            //         $sector->end_time !== '00:00:00'
+                                            //     ) {
+                                            //         $start = strtotime($sector->start_time);
+                                            //         $end   = strtotime($sector->end_time);
 
-                                                    if ($end > $start) {
-                                                        $totalMinutes += ($end - $start) / 60;
-                                                    }
-                                                }
-                                            }
+                                            //         if ($end > $start) {
+                                            //             $totalMinutes += ($end - $start) / 60;
+                                            //         }
+                                            //     }
+                                            // }
 
                                         } else {
 
@@ -2054,31 +2054,33 @@
                                             }
 
                                             // Sector block times
-                                            foreach ($lesson->sectors as $sector) {
+                                            // foreach ($lesson->sectors as $sector) {
 
-                                                if (
-                                                    !empty($sector->start_time) &&
-                                                    !empty($sector->end_time) &&
-                                                    $sector->start_time !== '00:00:00' &&
-                                                    $sector->end_time !== '00:00:00'
-                                                ) {
-                                                    $takeoff = strtotime($sector->start_time);
-                                                    $landing = strtotime($sector->end_time);
+                                            //     if (
+                                            //         !empty($sector->start_time) &&
+                                            //         !empty($sector->end_time) &&
+                                            //         $sector->start_time !== '00:00:00' &&
+                                            //         $sector->end_time !== '00:00:00'
+                                            //     ) {
+                                            //         $takeoff = strtotime($sector->start_time);
+                                            //         $landing = strtotime($sector->end_time);
 
-                                                    if ($landing > $takeoff) {
-                                                        $totalMinutes += ($landing - $takeoff) / 60;
-                                                    }
-                                                }
-                                            }
+                                            //         if ($landing > $takeoff) {
+                                            //             $totalMinutes += ($landing - $takeoff) / 60;
+                                            //         }
+                                            //     }
+                                            // }
                                         }
 
                                         $finalHours   = floor($totalMinutes / 60);
                                         $finalMinutes = $totalMinutes % 60;
                                         $finalTime    = sprintf('%02d:%02d', $finalHours, $finalMinutes);
+                                        $tooltipText = 'Calculated from Lesson and Sector (Start Time - End Time)'; 
 
-                                         $tooltipText = 'Calculated from Lesson and Sector (Start Time - End Time)';
-                                            
-                                    @endphp
+                                        // Running totals for this lesson card (lesson + its Additional Sectors)
+                                        $lessonCardBlockMinutes  = $totalMinutes;
+                                        $lessonCardFlightMinutes = 0;
+                                    ?>
                                     <div class="col-md-2 mt-3">
                                         <strong><i class="text-primary fas fa-hourglass-half"></i> Block Hours:</strong> 
                                         <span class="custom-tooltip">
@@ -2092,8 +2094,7 @@
                                     </div>
 
                                     <!-- // Operation -->
-                                    <?php
-                                    ?>
+                               
                                     @if(isset($lessonType) && $lessonType != 'groundschool')
                                         @if(!empty($lesson->operation1))
                                             <div class="col-md-2 mt-3">
@@ -2148,7 +2149,7 @@
                                             @endif
                                         </div>
 
-                                        @php
+                                        <?php
                                             if (!$isGroundschool) {
 
                                                 $totalMinutes = 0;
@@ -2169,22 +2170,22 @@
                                                 }
 
                                                 // Sector block times
-                                                foreach ($lesson->sectors as $sector) {
+                                                // foreach ($lesson->sectors as $sector) {
 
-                                                    if (
-                                                        !empty($sector->takeoff_time) &&
-                                                        !empty($sector->landing_time) &&
-                                                        $sector->takeoff_time !== '00:00:00' &&
-                                                        $sector->landing_time !== '00:00:00'
-                                                    ) {
-                                                        $takeoff = strtotime($sector->takeoff_time);
-                                                        $landing = strtotime($sector->landing_time);
+                                                //     if (
+                                                //         !empty($sector->takeoff_time) &&
+                                                //         !empty($sector->landing_time) &&
+                                                //         $sector->takeoff_time !== '00:00:00' &&
+                                                //         $sector->landing_time !== '00:00:00'
+                                                //     ) {
+                                                //         $takeoff = strtotime($sector->takeoff_time);
+                                                //         $landing = strtotime($sector->landing_time);
 
-                                                        if ($landing > $takeoff) {
-                                                            $totalMinutes += ($landing - $takeoff) / 60;
-                                                        }
-                                                    }
-                                                }
+                                                //         if ($landing > $takeoff) {
+                                                //             $totalMinutes += ($landing - $takeoff) / 60;
+                                                //         }
+                                                //     }
+                                                // }
 
                                             }
 
@@ -2193,8 +2194,11 @@
                                             $finalflightTime    = sprintf('%02d:%02d', $finalflightHours, $finalflightMinutes);
 
                                             $tooltipfilghtText = 'Calculated from Lesson and Sector (Takeoff Time - Landing time)';
-                                                
-                                        @endphp
+
+                                            // Add this lesson's flight minutes into the lesson card's running total
+                                            $lessonCardFlightMinutes += $totalMinutes;
+
+                                        ?>
 
                                         <div class="col-md-2 mt-3">
                                             <strong><i class="text-primary fas fa-hourglass-half"></i> Flight Hours:</strong> 
@@ -2212,7 +2216,7 @@
                                     <!-- // Rank -->
                                     @if(!empty($lesson->rank))
                                         <div class="col-md-2 mt-3">
-                                            <strong><i class="text-primary fas fa-hourglass-half"></i> Rank:</strong><br>
+                                            <strong><i class="text-primary fas fa-hourglass-half"></i>Rank:</strong><br>
                                             @if($lesson->rank == 1)
                                             Captain
                                             @elseif($lesson->rank == 2)
@@ -2515,6 +2519,9 @@
                                                     $sectorfinalHours = floor($totalMinutes / 60);
                                                     $sectorfinalMinutes = $totalMinutes % 60;
                                                     $sectorfinalTime = sprintf('%02d:%02d', $sectorfinalHours, $sectorfinalMinutes);
+
+                                                    // Add this sector's block minutes into the lesson card's running total
+                                                    $lessonCardBlockMinutes += $totalMinutes;
                                                 @endphp
                                                 <div class="col-md-2 mt-3">
                                                     <strong><i class="text-primary fas fa-hourglass-half"></i> Block Hours:</strong><br>
@@ -2596,6 +2603,9 @@
                                                             $sectorfinalFlightHours = floor($totalflightMinutes / 60);
                                                             $sectorfinalFLightMinutes = $totalflightMinutes % 60;
                                                             $sectorfinalFlightTime = sprintf('%02d:%02d', $sectorfinalFlightHours, $sectorfinalFLightMinutes);
+
+                                                            // Add this sector's flight minutes into the lesson card's running total
+                                                            $lessonCardFlightMinutes += $totalflightMinutes;
                                                         }
 
                                                     @endphp
@@ -2608,8 +2618,32 @@
 
                                             </div>
                                         @endforeach
-
                                     @endif
+                                    <?php
+                                        $lessonCardBlockHoursFinal   = floor($lessonCardBlockMinutes / 60);
+                                        $lessonCardBlockMinutesFinal = $lessonCardBlockMinutes % 60;
+                                        $lessonCardBlockTimeFinal    = sprintf('%02d:%02d', $lessonCardBlockHoursFinal, $lessonCardBlockMinutesFinal);
+
+                                        $lessonCardFlightHoursFinal   = floor($lessonCardFlightMinutes / 60);
+                                        $lessonCardFlightMinutesFinal = $lessonCardFlightMinutes % 60;
+                                        $lessonCardFlightTimeFinal    = sprintf('%02d:%02d', $lessonCardFlightHoursFinal, $lessonCardFlightMinutesFinal);
+                                    ?>
+                              
+                                    <div class="card shadow-sm mt-4 border-primary">
+                                                <div class="card-header bg-primary text-white mb-3">
+                                                    <strong><i class="fas fa-clock"></i> Lesson Time Summary</strong>
+                                                </div>
+                                                <div class="card-body">
+                                                    <p>
+                                                        <strong>Total Block Time:</strong>
+                                                         {{ $lessonCardBlockTimeFinal }}
+                                                    </p>
+                                                    <p>
+                                                        <strong>Total Flight Time:</strong>
+                                                        {{ $lessonCardFlightTimeFinal }}
+                                                    </p>
+                                                </div>
+                                    </div>
                                     <!-- {{-- Lesson Summary --}} -->
                                     @if(!empty($lesson->lesson_summary))
                                         <div class="col-md-12 mt-3">
