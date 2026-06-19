@@ -1341,8 +1341,7 @@
                                         <strong>Total Flight Time:</strong>
                                         {{ formatSeconds($totalFlightTime) }}
                                     </p>
-
-                                @else
+                                     @else
 
                                     {{-- ===== MULTI-EVENT BRANCH ===== --}}
                                     <?php
@@ -2082,7 +2081,7 @@
                                         $lessonCardFlightMinutes = 0;
                                     ?>
                                     <div class="col-md-2 mt-3">
-                                        <strong><i class="text-primary fas fa-hourglass-half"></i> Block Hours:</strong> 
+                                        <strong><i class="text-primary fas fa-hourglass-half"></i> Block Time:</strong> 
                                         <span class="custom-tooltip">
                                             <i class="fas fa-info-circle text-primary ms-1 fa-xs" style="font-size:12px; cursor:help;"></i>
                                             <span class="tooltip-text">{{ $tooltipText }}</span>
@@ -2201,7 +2200,7 @@
                                         ?>
 
                                         <div class="col-md-2 mt-3">
-                                            <strong><i class="text-primary fas fa-hourglass-half"></i> Flight Hours:</strong> 
+                                            <strong><i class="text-primary fas fa-hourglass-half"></i> Flight Time:</strong> 
                                             <span class="custom-tooltip">
                                                 <i class="fas fa-info-circle text-primary ms-1 fa-xs" style="font-size:12px; cursor:help;"></i>
                                                 <span class="tooltip-text">{{ $tooltipfilghtText }}</span>
@@ -2524,9 +2523,14 @@
                                                     $lessonCardBlockMinutes += $totalMinutes;
                                                 @endphp
                                                 <div class="col-md-2 mt-3">
-                                                    <strong><i class="text-primary fas fa-hourglass-half"></i> Block Hours:</strong><br>
+                                                    <strong><i class="text-primary fas fa-hourglass-half"></i> Block Time:               <span class="custom-tooltip">
+                                                    <i class="fas fa-info-circle text-primary ms-1 fa-xs" style="font-size:12px; cursor:help;"></i>
+                                                    <span class="tooltip-text">Block Time = On blocks - Off blocks</span>
+                                                </span></strong><br>
+                                                    
                                                     <!-- {{ $lesson->hours_credited ?? '00:00' }} -->
                                                     {{ $sectorfinalTime }}
+                                    
                                                 </div>
 
                                                 @if(isset($lessonType) && $lessonType != 'groundschool')
@@ -2611,7 +2615,10 @@
                                                     @endphp
 
                                                     <div class="col-md-2 mt-3">
-                                                        <strong><i class="text-primary fas fa-hourglass-half"></i> Flight Hours:</strong><br>
+                                                        <strong><i class="text-primary fas fa-hourglass-half"></i> Flight Time:<span class="custom-tooltip">
+                                                    <i class="fas fa-info-circle text-primary ms-1 fa-xs" style="font-size:12px; cursor:help;"></i>
+                                                    <span class="tooltip-text">Flight Time = Landing Time - Takeoff Time</span>
+                                                </span></strong><br>
                                                         {{ $sectorfinalFlightTime }}
                                                     </div>
                                                 @endif
@@ -2627,7 +2634,7 @@
                                         $lessonCardFlightHoursFinal   = floor($lessonCardFlightMinutes / 60);
                                         $lessonCardFlightMinutesFinal = $lessonCardFlightMinutes % 60;
                                         $lessonCardFlightTimeFinal    = sprintf('%02d:%02d', $lessonCardFlightHoursFinal, $lessonCardFlightMinutesFinal);
-                                    ?>
+                                    ?> 
                               
                                     <div class="card shadow-sm mt-4 border-primary">
                                                 <div class="card-header bg-primary text-white mb-3">
@@ -2637,10 +2644,22 @@
                                                     <p>
                                                         <strong>Total Block Time:</strong>
                                                          {{ $lessonCardBlockTimeFinal }}
+                                                        <i class="fas fa-info-circle"
+                                                                data-bs-toggle="tooltip"
+                                                                data-bs-placement="left"
+                                                                title="Total Block Time of Lesson"
+                                                                style="cursor:pointer;">
+                                                        </i>
                                                     </p>
                                                     <p>
                                                         <strong>Total Flight Time:</strong>
                                                         {{ $lessonCardFlightTimeFinal }}
+                                                        <i class="fas fa-info-circle"
+                                                                data-bs-toggle="tooltip"
+                                                                data-bs-placement="left"
+                                                                title="Total Flight Time of Lesson"
+                                                                style="cursor:pointer;">
+                                                        </i>
                                                     </p>
                                                 </div>
                                     </div>
@@ -3003,7 +3022,7 @@
                                
                                  
                                     <div class="col-md-2 mt-2">
-                                        <strong><i class="text-primary fas fa-hourglass-half"></i> Block Hours:</strong>
+                                        <strong><i class="text-primary fas fa-hourglass-half"></i> Block Time:</strong>
                                         <span class="custom-tooltip">
                                             <i class="fas fa-info-circle text-primary ms-1 fa-xs"
                                             style="font-size:12px; cursor:help;"></i>
@@ -3094,7 +3113,7 @@
                                         @endphp
 
                                         <div class="col-md-2 mt-3">
-                                            <strong><i class="text-primary fas fa-hourglass-half"></i> Flight Hours:</strong><br>
+                                            <strong><i class="text-primary fas fa-hourglass-half"></i> Flight Time:</strong><br>
                                             {{ $deffinalFlightTime }}
                                         </div>
                                     @endif
@@ -3233,7 +3252,7 @@
                                                     $sectorfinalTime = sprintf('%02d:%02d', $sectorfinalHours, $sectorfinalMinutes);
                                                 @endphp
                                                 <div class="col-md-2 mt-3">
-                                                    <strong><i class="text-primary fas fa-hourglass-half"></i> Block Hours:</strong><br>
+                                                    <strong><i class="text-primary fas fa-hourglass-half"></i> Block Time:</strong><br>
                                                     {{ $sectorfinalTime }}
                                                 </div>
 
@@ -3313,7 +3332,7 @@
                                                     @endphp
 
                                                     <div class="col-md-2 mt-3">
-                                                        <strong><i class="text-primary fas fa-hourglass-half"></i> Flight Hours:</strong><br>
+                                                        <strong><i class="text-primary fas fa-hourglass-half"></i> Flight Time:</strong><br>
                                                         {{ $deffsectorinalFlightTime }}
                                                     </div>
                                                 @endif
@@ -3543,7 +3562,7 @@
                                 @endphp
                         
                                 <div class="col-md-2 mt-2">
-                                    <strong><i class="text-primary fas fa-hourglass-half"></i> Block Hours:</strong>
+                                    <strong><i class="text-primary fas fa-hourglass-half"></i> Block Time:</strong>
                                     <span class="custom-tooltip">
                                         <i class="fas fa-info-circle text-primary ms-1 fa-xs"
                                         style="font-size:12px; cursor:help;"></i>
@@ -3614,7 +3633,7 @@
                                     @endphp
 
                                     <div class="col-md-2 mt-2">
-                                        <strong><i class="text-primary fas fa-hourglass-half"></i> Flight Hours:</strong><br>
+                                        <strong><i class="text-primary fas fa-hourglass-half"></i> Flight Time:</strong><br>
                                         {{ $deffinalFlightTime }}
                                     </div>
                                 @endif
@@ -3771,7 +3790,7 @@
                                                 $sectorfinalTime = sprintf('%02d:%02d', $sectorfinalHours, $sectorfinalMinutes);
                                             @endphp
                                             <div class="col-md-2 mt-3">
-                                                <strong><i class="text-primary fas fa-hourglass-half"></i> Block Hours:</strong><br>
+                                                <strong><i class="text-primary fas fa-hourglass-half"></i> Block Time:</strong><br>
                                                 {{ $sectorfinalTime }}
                                             </div>
 
@@ -3851,7 +3870,7 @@
                                                 @endphp
 
                                                 <div class="col-md-2 mt-3">
-                                                    <strong><i class="text-primary fas fa-hourglass-half"></i> Flight Hours:</strong><br>
+                                                    <strong><i class="text-primary fas fa-hourglass-half"></i> Flight Time:</strong><br>
                                                     {{ $deffsectorinalFlightTime }}
                                                 </div>
                                             @endif

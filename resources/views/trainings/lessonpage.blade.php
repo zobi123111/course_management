@@ -1855,14 +1855,14 @@
                                             </div>
                                         @endif
 
-                                        @if(Auth::user()->role == "1")
+                                        @if(Auth::user()->role == "1" || Auth::user()->role == "18")
                                             <div>
                                                 <label class="mt-3 mb-3">Lesson Summary</label>
                                                 <textarea name="lesson_summary[{{ $lesson->id }}]" rows="3" class="form-control" placeholder="Write Lesson Summary">{{ old("lesson_summary.$lesson->id", $eventLesson->lesson_summary ?? '') }}</textarea>
                                             </div>
                                         @endif
 
-                                        @if(Auth::user()->role == "1")
+                                        @if(Auth::user()->role == "1" || Auth::user()->role == "18")
                                             <div>
                                                 <label class="mt-3 mb-3">Instructor Comment</label>
                                                 <textarea name="instructor_summary[{{ $lesson->id }}]" rows="3" class="form-control" placeholder="Instructor Comment">{{ old("lesson_summary.$lesson->id", $eventLesson->instructor_comment ?? '') }}</textarea>
@@ -4445,7 +4445,7 @@
                 if (startLabel) startLabel.textContent = "Start";
                 if (endLabel) endLabel.textContent = "Finish";
 
-                if (addSectorBtn) addSectorBtn.textContent = "Add Lesson";
+                if (addSectorBtn) addSectorBtn.textContent = "Add Lesson"; 
             }
 
             // NORMAL FLIGHT
