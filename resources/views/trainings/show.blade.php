@@ -2981,7 +2981,7 @@
                                     </div>
 
 
-                                    @php
+                                    <?php 
                                         $lessonType = $def->deftasks?->subddddLesson?->courseLesson?->lesson_type ?? null;
                                         $isGroundschool = ($lessonType === 'groundschool');
 
@@ -3001,16 +3001,16 @@
                                       
 
                                         // Deferred sectors
-                                        foreach ($def->deferredSectors as $sector) {
-                                            if ( !empty($sector->start_time) && !empty($sector->end_time) && $sector->start_time !== '00:00:00' && $sector->end_time !== '00:00:00') {
-                                                $start = strtotime($sector->start_time);
-                                                $end   = strtotime($sector->end_time);
+                                        // foreach ($def->deferredSectors as $sector) {
+                                        //     if ( !empty($sector->start_time) && !empty($sector->end_time) && $sector->start_time !== '00:00:00' && $sector->end_time !== '00:00:00') {
+                                        //         $start = strtotime($sector->start_time);
+                                        //         $end   = strtotime($sector->end_time);
 
-                                                if ($end > $start) {
-                                                    $totalMinutes += ($end - $start) / 60;
-                                                }
-                                            }
-                                        }
+                                        //         if ($end > $start) {
+                                        //             $totalMinutes += ($end - $start) / 60;
+                                        //         }
+                                        //     }
+                                        // }
 
                                         $hours = floor($totalMinutes / 60);
                                         $minutes = $totalMinutes % 60;
@@ -3018,7 +3018,7 @@
                                         $blockHours = sprintf('%02d:%02d', $hours, $minutes);
 
                                         $tooltipText = 'Calculated from Deferred Lesson + Deferred Sector Start/End Times';
-                                    @endphp
+                                    ?>
                                
                                  
                                     <div class="col-md-2 mt-2">
@@ -3341,6 +3341,92 @@
 
                                     @endif
 
+                                    {{-- Lesson Time Summary --}}
+                                    @php
+                                        $defLessonBlockMinutes = 0;
+
+                                        if (!empty($def->start_time) && !empty($def->end_time)) {
+                                            $s = strtotime($def->start_time);
+                                            $e = strtotime($def->end_time);
+                                            if ($e > $s) {
+                                                $defLessonBlockMinutes += ($e - $s) / 60;
+                                            }
+                                        }
+
+                                        foreach ($def->deferredSectors as $sector) {
+                                            if (!empty($sector->start_time) && !empty($sector->end_time) &&
+                                                $sector->start_time !== '00:00:00' && $sector->end_time !== '00:00:00') {
+                                                $s = strtotime($sector->start_time);
+                                                $e = strtotime($sector->end_time);
+                                                if ($e > $s) {
+                                                    $defLessonBlockMinutes += ($e - $s) / 60;
+                                                }
+                                            }
+                                        }
+
+                                        $defLessonBlockHoursFinal   = floor($defLessonBlockMinutes / 60);
+                                        $defLessonBlockMinutesFinal = $defLessonBlockMinutes % 60;
+                                        $defLessonBlockTimeFinal    = sprintf('%02d:%02d', $defLessonBlockHoursFinal, $defLessonBlockMinutesFinal);
+
+                                        $defLessonFlightMinutes = 0;
+
+                                        if (!$isGroundschool) {
+                                            if (!empty($def->takeoff_time) && !empty($def->landing_time) &&
+                                                $def->takeoff_time !== '00:00:00' && $def->landing_time !== '00:00:00') {
+                                                $s = strtotime($def->takeoff_time);
+                                                $e = strtotime($def->landing_time);
+                                                if ($e > $s) {
+                                                    $defLessonFlightMinutes += ($e - $s) / 60;
+                                                }
+                                            }
+
+                                            foreach ($def->deferredSectors as $sector) {
+                                                if (!empty($sector->takeoff_time) && !empty($sector->landing_time) &&
+                                                    $sector->takeoff_time !== '00:00:00' && $sector->landing_time !== '00:00:00') {
+                                                    $s = strtotime($sector->takeoff_time);
+                                                    $e = strtotime($sector->landing_time);
+                                                    if ($e > $s) {
+                                                        $defLessonFlightMinutes += ($e - $s) / 60;
+                                                    }
+                                                }
+                                            }
+                                        }
+
+                                        $defLessonFlightHoursFinal   = floor($defLessonFlightMinutes / 60);
+                                        $defLessonFlightMinutesFinal = $defLessonFlightMinutes % 60;
+                                        $defLessonFlightTimeFinal    = sprintf('%02d:%02d', $defLessonFlightHoursFinal, $defLessonFlightMinutesFinal);
+                                    @endphp
+
+                                    <div class="card shadow-sm mt-4 border-primary">
+                                        <div class="card-header bg-primary text-white mb-3">
+                                            <strong><i class="fas fa-clock"></i> Lesson Time Summary</strong>
+                                        </div>
+                                        <div class="card-body">
+                                            <p>
+                                                <strong>Total Block Time:</strong>
+                                                {{ $defLessonBlockTimeFinal }}
+                                                <i class="fas fa-info-circle"
+                                                   data-bs-toggle="tooltip"
+                                                   data-bs-placement="left"
+                                                   title="Total Block Time of Lesson"
+                                                   style="cursor:pointer;">
+                                                </i>
+                                            </p>
+                                            @if(!$isGroundschool)
+                                            <p>
+                                                <strong>Total Flight Time:</strong>
+                                                {{ $defLessonFlightTimeFinal }}
+                                                <i class="fas fa-info-circle"
+                                                   data-bs-toggle="tooltip"
+                                                   data-bs-placement="left"
+                                                   title="Total Flight Time of Lesson"
+                                                   style="cursor:pointer;">
+                                                </i>
+                                            </p>
+                                            @endif
+                                        </div>
+                                    </div>
+
                                     <!-- {{-- Lesson Summary --}} -->
                                     @if(!empty($def->lesson_summary))
                                         <div class="col-md-12 mt-3">
@@ -3519,7 +3605,7 @@
                                 </div>
 
 
-                                @php
+                                <?php
                                     $lessonType = $def->deftasks?->subddddLesson?->courseLesson?->lesson_type ?? null;
                                     $isGroundschool = ($lessonType === 'groundschool');
 
@@ -3537,21 +3623,21 @@
                                     }
 
                                     // Sector durations
-                                    foreach ($def->customSectors as $sector) {
-                                        if (
-                                            !empty($sector->start_time) &&
-                                            !empty($sector->end_time) &&
-                                            $sector->start_time !== '00:00:00' &&
-                                            $sector->end_time !== '00:00:00'
-                                        ) {
-                                            $start = strtotime($sector->start_time);
-                                            $end   = strtotime($sector->end_time);
+                                    // foreach ($def->customSectors as $sector) {
+                                    //     if (
+                                    //         !empty($sector->start_time) &&
+                                    //         !empty($sector->end_time) &&
+                                    //         $sector->start_time !== '00:00:00' &&
+                                    //         $sector->end_time !== '00:00:00'
+                                    //     ) {
+                                    //         $start = strtotime($sector->start_time);
+                                    //         $end   = strtotime($sector->end_time);
 
-                                            if ($end > $start) {
-                                                $totalMinutes += ($end - $start) / 60;
-                                            }
-                                        }
-                                    }
+                                    //         if ($end > $start) {
+                                    //             $totalMinutes += ($end - $start) / 60;
+                                    //         }
+                                    //     }
+                                    // }
 
                                     $hours = floor($totalMinutes / 60);
                                     $mins  = $totalMinutes % 60;
@@ -3559,7 +3645,7 @@
                                     $duration = sprintf('%02d:%02d', $hours, $mins);
 
                                     $tooltipText = 'Calculated from Lesson Start/End Time + Sector Start/End Times';
-                                @endphp
+                                ?>
                         
                                 <div class="col-md-2 mt-2">
                                     <strong><i class="text-primary fas fa-hourglass-half"></i> Block Time:</strong>
@@ -3878,6 +3964,91 @@
                                     @endforeach
 
                                 @endif
+
+                                {{-- Lesson Time Summary --}}
+                                @php
+                                    $customLessonBlockMinutes = 0;
+
+                                    if (!empty($def->start_time) && !empty($def->end_time)) {
+                                        $s = \Carbon\Carbon::parse($def->start_time);
+                                        $e = \Carbon\Carbon::parse($def->end_time);
+                                        $customLessonBlockMinutes += $s->diffInMinutes($e);
+                                    }
+
+                                    foreach ($def->customSectors as $sector) {
+                                        if (!empty($sector->start_time) && !empty($sector->end_time) &&
+                                            $sector->start_time !== '00:00:00' && $sector->end_time !== '00:00:00') {
+                                            $s = strtotime($sector->start_time);
+                                            $e = strtotime($sector->end_time);
+                                            if ($e > $s) {
+                                                $customLessonBlockMinutes += ($e - $s) / 60;
+                                            }
+                                        }
+                                    }
+
+                                    $customLessonBlockHoursFinal   = floor($customLessonBlockMinutes / 60);
+                                    $customLessonBlockMinutesFinal = $customLessonBlockMinutes % 60;
+                                    $customLessonBlockTimeFinal    = sprintf('%02d:%02d', $customLessonBlockHoursFinal, $customLessonBlockMinutesFinal);
+
+                                    $customLessonFlightMinutes = 0;
+
+                                    if (!$isGroundschool) {
+                                        if (!empty($def->takeoff_time) && !empty($def->landing_time) &&
+                                            $def->takeoff_time !== '00:00:00' && $def->landing_time !== '00:00:00') {
+                                            $s = strtotime($def->takeoff_time);
+                                            $e = strtotime($def->landing_time);
+                                            if ($e > $s) {
+                                                $customLessonFlightMinutes += ($e - $s) / 60;
+                                            }
+                                        }
+
+                                        foreach ($def->customSectors as $sector) {
+                                            if (!empty($sector->takeoff_time) && !empty($sector->landing_time) &&
+                                                $sector->takeoff_time !== '00:00:00' && $sector->landing_time !== '00:00:00') {
+                                                $s = strtotime($sector->takeoff_time);
+                                                $e = strtotime($sector->landing_time);
+                                                if ($e > $s) {
+                                                    $customLessonFlightMinutes += ($e - $s) / 60;
+                                                }
+                                            }
+                                        }
+                                    }
+
+                                    $customLessonFlightHoursFinal   = floor($customLessonFlightMinutes / 60);
+                                    $customLessonFlightMinutesFinal = $customLessonFlightMinutes % 60;
+                                    $customLessonFlightTimeFinal    = sprintf('%02d:%02d', $customLessonFlightHoursFinal, $customLessonFlightMinutesFinal);
+                                @endphp
+
+                                <div class="card shadow-sm mt-4 border-primary">
+                                    <div class="card-header bg-primary text-white mb-3">
+                                        <strong><i class="fas fa-clock"></i> Lesson Time Summary</strong>
+                                    </div>
+                                    <div class="card-body">
+                                        <p>
+                                            <strong>Total Block Time:</strong>
+                                            {{ $customLessonBlockTimeFinal }}
+                                            <i class="fas fa-info-circle"
+                                               data-bs-toggle="tooltip"
+                                               data-bs-placement="left"
+                                               title="Total Block Time of Lesson"
+                                               style="cursor:pointer;">
+                                            </i>
+                                        </p>
+                                        @if(!$isGroundschool)
+                                        <p>
+                                            <strong>Total Flight Time:</strong>
+                                            {{ $customLessonFlightTimeFinal }}
+                                            <i class="fas fa-info-circle"
+                                               data-bs-toggle="tooltip"
+                                               data-bs-placement="left"
+                                               title="Total Flight Time of Lesson"
+                                               style="cursor:pointer;">
+                                            </i>
+                                        </p>
+                                        @endif
+                                    </div>
+                                </div>
+
                                 <!-- {{-- Lesson Summary --}} -->
                                 @if(!empty($def->lesson_summary))
                                 <div class="col-md-12 mt-3">
