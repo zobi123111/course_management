@@ -3593,7 +3593,10 @@ class TrainingEventsController extends Controller
             'defLessons' => function ($query) use ($lesson_id, $userId) {
                 $query->where('id', $lesson_id)
                     ->with([
-                        'instructor:id,fname,lname',
+                        'instructor' => function ($q) {
+                        $q->select('id', 'fname', 'lname')
+                            ->with(['documents:id,user_id,licence']);
+                            },
                         'resource:id,name,type,class,registration',
                         'deferredSectors',
                         'customSectors',
@@ -3780,14 +3783,113 @@ class TrainingEventsController extends Controller
                 }
             }
         }
+
+        if (!function_exists('toSeconds')) {
+            function toSeconds(?string $time): int {
+                if (!$time) return 0;
+                [$h, $m] = array_pad(explode(':', $time), 2, 0);
+                return ($h * 3600) + ($m * 60);
+            }
+        }
+
+        if (!function_exists('formatSeconds')) {
+            function formatSeconds(int $seconds): string
+            {
+                $h = floor($seconds / 3600);
+                $m = floor(($seconds % 3600) / 60);
+
+                return sprintf('%02d:%02d', $h, $m);
+            }
+        }
+        
+        $totalLessonblockTime = 0;
+        $totalSectorblockTime = 0;
+        $totalLessonflightTime = 0;
+        $totalSectorflightTime = 0;
+
+
+        if($eventLesson->deftasks?->subddddLesson?->courseLesson?->lesson_type != "groundschool"){
+
+            if($lessontype === 'custom'){
+                $start = strtotime($lesson->start_time);
+                $end = strtotime($lesson->end_time);
+                $takeoff = strtotime($lesson->takeoff_time);
+                $landing = strtotime($lesson->landing_time);
+                
+                if ($start && $end && $end > $start) {
+                    $totalLessonblockTime += ($end - $start);
+                }
+                
+                if ($takeoff && $landing && $landing > $takeoff) {
+                    $totalLessonflightTime += ($landing - $takeoff);
+                }
+
+                foreach ($lesson->customSectors as $sector) {
+                    $start = strtotime($sector->start_time);
+                    $end = strtotime($sector->end_time);
+                    $takeoff = strtotime($sector->takeoff_time);
+                    $landing = strtotime($sector->landing_time);
+
+                    if ($start && $end && $end > $start) {
+                        $totalSectorblockTime += ($end - $start);
+                    }
+
+                    if ($takeoff && $landing && $landing > $takeoff) {
+                        $totalSectorflightTime += ($landing - $takeoff);
+                    }
+                }
+            }
+            else{
+                $start = strtotime($lesson->start_time);
+                $end = strtotime($lesson->end_time);
+                $takeoff = strtotime($lesson->takeoff_time);
+                $landing = strtotime($lesson->landing_time);
+                
+                if ($start && $end && $end > $start) {
+                    $totalLessonblockTime += ($end - $start);
+                }
+
+                if ($takeoff && $landing && $landing > $takeoff) {
+                    $totalLessonflightTime += ($landing - $takeoff);
+                }
+
+                foreach ($lesson->deferredSectors as $sector) {
+                    $start = strtotime($sector->start_time);
+                    $end = strtotime($sector->end_time);
+                    $takeoff = strtotime($sector->takeoff_time);
+                    $landing = strtotime($sector->landing_time);
+
+                    if ($start && $end && $end > $start) {
+                        $totalSectorblockTime += ($end - $start);
+                    }
+                    
+                    if ($takeoff && $landing && $landing > $takeoff) {
+                        $totalSectorflightTime += ($landing - $takeoff);
+                    }
+                }
+            }
+        }
+
+  
+
+        $blockCredited = $totalSectorblockTime + $totalLessonblockTime;
+        $totalFlightTime = $totalSectorflightTime + $totalLessonflightTime;
+
+        $totalFlightTimeFormatted = formatSeconds($totalFlightTime);
+        $blockCreditedFormatted   = formatSeconds($blockCredited);
+     
+
+        // return view('trainings.deferred-lesson-report', compact('event', 'eventLesson', 'tasks', 'ExaminerFinal', 'InstructorFinal', 'PilotFinal', 'totalFlightTimeFormatted', 'blockCreditedFormatted'));
         
         $pdf = PDF::loadView('trainings.deferred-lesson-report', [
             'event' => $event,
-            'eventLesson' => $eventLesson,
+            'eventLesson' => $eventLesson, 
             'tasks' => $tasks,
             'ExaminerFinal' => $ExaminerFinal,
             'InstructorFinal' => $InstructorFinal,
             'PilotFinal' => $PilotFinal,
+            'totalFlightTimeFormatted' =>  $totalFlightTimeFormatted,
+            'blockCreditedFormatted'   =>  $blockCreditedFormatted
         ]);
 
         $filename = 'Deferred_Lesson_Report_' . Str::slug($defLesson->lesson_title) . '.pdf';
@@ -3838,50 +3940,7 @@ class TrainingEventsController extends Controller
 
         $lesson = $eventLesson->lesson;
 
-        // $competencyType = 'examiner';
-        // $examiner_grading = CbtaGrading::with(['examinerGrading' => function ($query) use ($event_id, $userID, $competencyType, $lesson_id) {
-        //                     $query->where('event_id', $event_id)
-        //                         ->where('user_id', $userID)
-        //                         ->where('competency_type', $competencyType)
-        //                         ->where('lesson_id', $lesson_id);
-        //                 }])
-        //                     ->whereHas('examinerGrading', function ($query) use ($event_id, $userID, $competencyType, $lesson_id) {
-        //                         $query->where('event_id', $event_id)
-        //                             ->where('user_id', $userID)
-        //                             ->where('competency_type', $competencyType)
-        //                              ->where('lesson_id', $lesson_id);
-        //                     })
-        //                     ->get();
 
-        // $instructor = 'instructor';
-        // $instructor_grading = CbtaGrading::with(['examinerGrading' => function ($query) use ($event_id, $userID, $instructor, $lesson_id) {
-        //     $query->where('event_id', $event_id)
-        //         ->where('user_id', $userID)
-        //         ->where('lesson_id', $lesson_id)
-        //         ->where('competency_type', $instructor);
-        // }])
-        //     ->whereHas('examinerGrading', function ($query) use ($event_id, $userID, $instructor, $lesson_id) {
-        //         $query->where('event_id', $event_id)
-        //             ->where('user_id', $userID)
-        //             ->where('lesson_id', $lesson_id)
-        //             ->where('competency_type', $instructor);
-        //     })
-        //     ->get();
-
-        // $pilot = 'pilot';
-        // $pilot_grading = CbtaGrading::with(['examinerGrading' => function ($query) use ($event_id, $userID, $pilot, $lesson_id) {
-        //     $query->where('event_id', $event_id)
-        //         ->where('user_id', $userID)
-        //         ->where('lesson_id', $lesson_id)
-        //         ->where('competency_type', $pilot);
-        // }])
-        //     ->whereHas('examinerGrading', function ($query) use ($event_id, $userID, $pilot, $lesson_id) {
-        //         $query->where('event_id', $event_id)
-        //             ->where('user_id', $userID)
-        //             ->where('lesson_id', $lesson_id)
-        //             ->where('competency_type', $pilot);
-        //     })
-        //     ->get();
 
         $dateCheck = Carbon::parse('2026-02-10');
 
@@ -4098,14 +4157,6 @@ class TrainingEventsController extends Controller
 
         
 
-        // Total Block Credited (blade logic)
-        // $TotalBlockCredited =
-        //     // $lessonFlightTime +
-        //     $totals['flight'] +
-        //     $totals['customDuration'] +
-        //     // $sectorFlightTime +
-        //     $totals['lessonCreditedTime'];
-
         // Add sector block time
         $blockCredited = $totalSectorblockTime + $lessonTime;
         
@@ -4127,9 +4178,6 @@ class TrainingEventsController extends Controller
             'event' => $event,
             'lesson' => $lesson,
             'eventLesson' => $eventLesson,
-            // 'examiner_grading' => $examiner_grading,
-            // 'instructor_grading' => $instructor_grading,
-            // 'pilot_grading' => $pilot_grading,
             'examiner_grading' => $examinerFinal,
             'instructor_grading' => $instructorFinal,
             'pilot_grading' => $pilotFinal,
@@ -6310,6 +6358,7 @@ class TrainingEventsController extends Controller
         return view('trainings.lessonpage', compact('trainingEvent', 'lesson_id', 'student', 'overallAssessments', 'eventLessons', 'courselessons', 'taskGrades', 'competencyGrades', 'trainingFeedbacks', 'isGradingCompleted', 'resources', 'instructors', 'lessondetails', 'deflessondetails', 'defTasks', 'deferredLessons', 'defLessonTasks', 'deferredTaskIds', 'gradedDefTasksMap', 'courses', 'customLessons', 'customLessonTasks', 'def_grading', 'instructor_cbta', 'examiner_cbta','pilot_cbta', 'examiner_grading','pilot_grading', 'instructor_grading','groupedLogs','grouped_deferredLogs', 'grouped_customLogs'));
     }
 
+
     public function getInstructorLicence($id)
     {
         $inst = UserDocument::where('user_id', $id)->first();
@@ -6331,7 +6380,7 @@ class TrainingEventsController extends Controller
     
     public function EventLessonUpdate(Request $request)
     {
-       
+        // dd($request->operation);
         $instructor_id = $request->instructor_id;
         $doc = UserDocument::where('user_id', $instructor_id)->first();
 

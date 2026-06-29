@@ -968,14 +968,14 @@
 
                                         <select class="form-select editable" name="operation" id="operationSelect" disabled>
                                             @if($eventType == 1)
-                                                <option value="1" {{ $lesson->operation1 == '1' ? 'selected' : '' }}>PF LHS</option>
-                                                <option value="2" {{ $lesson->operation1 == '2' ? 'selected' : '' }}>PF RHS</option>
+                                                <option value="1" {{ $lesson->operation == '1' ? 'selected' : '' }}>PF LHS</option>
+                                                <option value="2" {{ $lesson->operation == '2' ? 'selected' : '' }}>PF RHS</option>
 
                                             @elseif($eventType == 2 || $eventType == 3)
-                                                <option value="1" {{ $lesson->operation1 == '1' ? 'selected' : '' }}>PF LHS</option>
-                                                <option value="2" {{ $lesson->operation1 == '2' ? 'selected' : '' }}>PM LHS</option>
-                                                <option value="3" {{ $lesson->operation1 == '3' ? 'selected' : '' }}>PF RHS</option>
-                                                <option value="4" {{ $lesson->operation1 == '4' ? 'selected' : '' }}>PM RHS</option>
+                                                <option value="1" {{ $lesson->operation == '1' ? 'selected' : '' }}>PF LHS</option>
+                                                <option value="2" {{ $lesson->operation == '2' ? 'selected' : '' }}>PM LHS</option>
+                                                <option value="3" {{ $lesson->operation == '3' ? 'selected' : '' }}>PF RHS</option>
+                                                <option value="4" {{ $lesson->operation == '4' ? 'selected' : '' }}>PM RHS</option>
                                             @endif
                                         </select>
                                     </div>
