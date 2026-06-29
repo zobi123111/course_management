@@ -35,10 +35,8 @@
                 </td>
             </tr>
         </table>
-
-
         <hr>
-        <div class="section">
+        <div class="section"> 
             <strong>Date:</strong> {{ date('M d, Y', strtotime($eventLesson?->lesson_date)) }}<br>
             <strong>Student Name:</strong> {{ $event?->student?->fname }} {{ $event?->student?->lname }}<br>
             <strong>Instructor Name:</strong> {{ $eventLesson?->instructor?->fname }} {{ $eventLesson?->instructor?->lname }}<br>
@@ -47,8 +45,15 @@
             <strong>Total Lesson Time:</strong> {{ \Carbon\Carbon::parse($eventLesson?->end_time)->diffInMinutes(\Carbon\Carbon::parse($eventLesson?->start_time)) }} minutes<br>
             <strong>Departure:</strong> {{ $eventLesson?->departure_airfield ?? 'N/A' }}<br>
             <strong>Arrival:</strong> {{ $eventLesson?->destination_airfield ?? 'N/A' }}<br> 
-
-            <strong>Resource :</strong> {{ $eventLesson?->resource_name ?? 'N/A' }}<br>
+            <strong>Resource :</strong> {{ $eventLesson->resource->name ?? 'N/A' }}<br>
+           @if($eventLesson->deftasks?->subddddLesson?->courseLesson?->lesson_type !="groundschool")
+            <strong>Off-Blocks:</strong>{{ \Carbon\Carbon::parse($eventLesson->start_time)->format('H:i') }} <br>
+            <strong>On-Blocks:</strong> {{ \Carbon\Carbon::parse($eventLesson->end_time)->format('H:i') }} <br>
+            <strong>Takeoff Time:</strong>{{ \Carbon\Carbon::parse($eventLesson->takeoff_time)->format('H:i') }} <br>
+            <strong>Landing Time:</strong> {{ \Carbon\Carbon::parse($eventLesson->landing_time)->format('H:i') }} <br>
+            <strong>Total Blocks:</strong> {{ $blockCreditedFormatted }}<br>
+            <strong>Total Flight:</strong> {{ $totalFlightTimeFormatted }}<br>
+          @endif
             @php
                 $resource = $eventLesson?->resource ?? $event?->resource;
             @endphp
@@ -61,7 +66,7 @@
             @endif
         </div>
 
-        @if($eventLesson->deferredSectors->isNotEmpty())
+        @if($eventLesson->deferredSectors->isNotEmpty()) 
             <div>
                 <h2>Additional Sectors</h2>
                 @foreach($eventLesson->deferredSectors as $sector)
@@ -76,13 +81,14 @@
                 @endforeach
             </div>
         @endif
+    
 
         @if($eventLesson->customSectors->isNotEmpty())
             <div>
                 <h2>Additional Sectors</h2>
                 @foreach($eventLesson->customSectors as $sector)
                     <div><strong>Instructor:</strong> {{ $eventLesson->instructor->fname ?? '' }} {{ $eventLesson->instructor->lname ?? '' }}</div>
-                    <div><strong>Licence No:</strong> {{ !empty($eventLesson->instructor_license_number) ? $eventLesson->instructor_license_number : 'N/A' }}</div>
+                    <div><strong>Licence No:</strong>  {{ optional(optional($eventLesson->instructor)->documents)->licence ?? 'N/A' }}</div>
                     <div><strong>Resource:</strong> {{ $sector->resourceData->name ?? 'N/A' }}</div>
                     <div><strong>Lesson Date:</strong> {{ ($sector->lesson_date) ? date('d/m/Y', strtotime($sector->lesson_date)) : 'N/A' }}</div>
                     <div><strong>Start Time:</strong> {{ ($sector->start_time) ? date('h:i A', strtotime($sector->start_time)) : 'N/A' }}</div>
